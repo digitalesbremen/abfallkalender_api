@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	log.Println("Hello Bremer Abfallkalender API!")
+	log.Println("Hello Bremer Abfallkalender API!!!")
 
 	router := mux.NewRouter()
 
