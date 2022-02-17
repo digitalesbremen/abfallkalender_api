@@ -5,6 +5,7 @@ import (
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
+	"os"
 )
 
 func main() {
@@ -15,7 +16,14 @@ func main() {
 	router.HandleFunc("/", helloWorld).Methods("GET")
 	http.Handle("/", router)
 
-	_ = http.ListenAndServe(":8080", router)
+	port := os.Getenv("PORT") // Heroku provides the port to bind to
+	if port == "" {
+		port = "8080"
+	}
+
+	log.Printf("Port is set to %s\n", port)
+
+	_ = http.ListenAndServe(":"+port, router)
 }
 
 func helloWorld(w http.ResponseWriter, r *http.Request) {
