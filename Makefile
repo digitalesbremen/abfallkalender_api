@@ -1,5 +1,6 @@
-CONTAINER_NAME=abfallkalender_api
-IMAGE_NAME=larmic/abfallkalender_api
+CONTAINER_NAME=bremer-abfallkalender-api
+IMAGE_NAME=larmic/bremer-abfallkalender-api
+HERUKO_APP_NAME=bremer-abfallkalender-api
 VERSION_FILE=VERSION
 VERSION=`cat $(VERSION_FILE)`
 IMAGE_TAG=${VERSION}
@@ -17,3 +18,18 @@ docker-run:
 
 docker-stop:
 	docker stop ${CONTAINER_NAME}
+
+heruko-container-login:
+	heroku container:login
+
+heruko-container-push:
+	heroku container:push web --app ${HERUKO_APP_NAME}
+
+heruko-container-deploy:
+	heroku container:release web
+
+heruko-container-logs:
+	heroku logs --tail --app ${HERUKO_APP_NAME}
+
+heruko-open-app:
+	heroku open --app bremer-abfallkalender-api
