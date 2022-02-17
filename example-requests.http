@@ -1,0 +1,44 @@
+# Siehe https://www.die-bremer-stadtreinigung.de/abfallwirtschaft/entsorgung/bremer-abfallkalender-23080
+# Der Bremer Abfallkalender nutzt eine dynamische URL. Diese muss zunächst bestimmt werden.
+# Ein HEAD gegen die Start-Url 'https://web.c-trace.de/bremenabfallkalender/Abfallkalender' liefert im
+# Header der Response das Feld 'Location'.
+#
+# HINWEIS: der Suffix '/Abfallkalender' muss aus dem Feld 'Location' entfernt werden!
+#
+# Dynamische URL:  https://web.c-trace.de + ${header:location}
+
+# curl -i https://web.c-trace.de/bremenabfallkalender/Abfallkalender
+// @no-redirect
+HEAD https://web.c-trace.de/bremenabfallkalender/Abfallkalender
+
+> {%
+    client.global.set("redirect_url", "https://web.c-trace.de" + response.headers.valueOf("Location").replace("/Abfallkalender", ""));
+    client.log("Redirect location is " + client.global.get("redirect_url"))
+%}
+
+###
+
+
+# OPTIONAL: Die dynamische URL kann genutzt werden, um sämtliche Straßen in Bremen zu bestimmen
+GET {{redirect_url}}/Data/Strassen?ort=Bremen
+Content-Type: application/json
+
+###
+
+# OPTIONAL: Die dynamische URL zusammen mit einer gewählten Straße kann genutzt werden, um sämtliche
+#           Hausnummern zu einer Straße zu bestimmen!
+GET {{redirect_url}}/Data/Hausnummern?ort=Bremen&strasse=Aachener+Straße
+Content-Type: application/json
+
+###
+
+# Die genaue Straßenbezeichnung und die zugehörige Hausnummer kann entweder über die beiden oberen Services
+# oder direkt über die Homepage bestimmt werden.
+POST {{redirect_url}}/abfallkalender
+Content-Type: application/json
+
+{
+  "ort": "Bremen",
+  "strasse": "Aachener Straße",
+  "hausnr": "22"
+}
