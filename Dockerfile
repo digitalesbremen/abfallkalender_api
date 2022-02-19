@@ -1,10 +1,6 @@
 # Use multi stage build to# minimize generated docker images size
 # see: https://docs.docker.com/develop/develop-images/multistage-build/
 
-# Use multi stage build to# minimize generated docker images size
-# see: https://docs.docker.com/develop/develop-images/multistage-build/
-
-
 # Step 1: create multi stage assets builder
 # HINT: up to now parcel does not support arm -> https://github.com/parcel-bundler/parcel/issues/5812
 # .github actions configuration is using multi arch target plattform
@@ -38,6 +34,8 @@ WORKDIR /app
 
 COPY main.go /app/
 COPY go.* /app/
+COPY open-api-3.yaml /app
+COPY VERSION /app
 #COPY src/backend /app/src/backend
 COPY --from=assets /app/dist /app/dist
 
@@ -53,9 +51,11 @@ RUN go test -v ./...
 
 ARG BUILDPLATFORM
 ARG TARGETPLATFORM
-ARG VERSION
 
-RUN echo "I am running on $BUILDPLATFORM, building $VERSION for $TARGETPLATFORM"
+RUN echo "I am running on $BUILDPLATFORM, building for $TARGETPLATFORM"
+
+# set version in open-api-3.yaml
+RUN sed -i "s/\${VERSION}/$(cat VERSION)/" open-api-3.yaml
 
 RUN if [ "$TARGETPLATFORM" = "linux/arm/v7" ] ; then \
         echo "I am building linux/arm/v7 with CGO_ENABLED=0 GOARCH=arm GOARM=7" ; \
@@ -79,6 +79,7 @@ RUN if [ "$TARGETPLATFORM" = "linux/amd64" ] ; then \
 FROM scratch
 WORKDIR /root/
 COPY --from=builder /app/main .
+COPY --from=builder /app/open-api-3.yaml .
 
 EXPOSE 8080
 ENTRYPOINT ["./main"]

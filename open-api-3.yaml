@@ -1,0 +1,31 @@
+openapi: 3.1.0
+
+info:
+  title: Bremer Abfallkalender API
+  version: ${VERSION}
+  contact:
+    name: Lars Michaelis
+    email: mail@larmic.de
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+
+paths:
+  /:
+    get:
+      summary: Returns open api documentation
+      responses:
+        '200':
+          content: 'application/x-yaml'
+  /hello:
+    get:
+      summary: Returns a simple text (just for testing)
+      responses:
+        '200':
+          content: 'application/text'
+  /component:
+    get:
+      summary: Returns kalender web component
+      responses:
+        '200':
+          content: 'application/javascript'

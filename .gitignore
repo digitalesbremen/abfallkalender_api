@@ -16,5 +16,6 @@ bin/*
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
-/node_modules/
-/dist
+node_modules/
+dist
+.parcel-cache

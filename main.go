@@ -4,6 +4,7 @@ import (
 	_ "embed"
 	"fmt"
 	"github.com/gorilla/mux"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -17,8 +18,9 @@ func main() {
 
 	router := mux.NewRouter()
 
-	router.HandleFunc("/component", serveJs).Methods("GET")
-	router.HandleFunc("/", helloWorld).Methods("GET")
+	router.HandleFunc("/component", serveWebComponent).Methods("GET")
+	router.HandleFunc("/hello", helloWorld).Methods("GET")
+	router.HandleFunc("/", serveOpenApiSpecification).Methods("GET")
 
 	http.Handle("/", router)
 
@@ -32,11 +34,20 @@ func main() {
 	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
 
-func serveJs(w http.ResponseWriter, _ *http.Request) {
-	w.Header().Set("Content-Type", "text/javascript")
+func serveWebComponent(w http.ResponseWriter, _ *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "text/javascript; charset=UTF-8")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	_, _ = fmt.Fprint(w, content)
 }
+
+func serveOpenApiSpecification(w http.ResponseWriter, _ *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/x-yaml; charset=UTF-8")
+	dat, _ := ioutil.ReadFile("open-api-3.yaml")
+	_, _ = w.Write(dat)
+}
+
 func helloWorld(w http.ResponseWriter, _ *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	_, _ = fmt.Fprintf(w, "Hallo Bremer Abfallkalender API!")
