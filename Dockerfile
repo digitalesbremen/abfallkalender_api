@@ -1,14 +1,45 @@
 # Use multi stage build to# minimize generated docker images size
 # see: https://docs.docker.com/develop/develop-images/multistage-build/
 
-# Step 1: create multi stage builder (about 800 MB)
+# Use multi stage build to# minimize generated docker images size
+# see: https://docs.docker.com/develop/develop-images/multistage-build/
+
+
+# Step 1: create multi stage assets builder
+# HINT: up to now parcel does not support arm -> https://github.com/parcel-bundler/parcel/issues/5812
+# .github actions configuration is using multi arch target plattform
+# assets builder is only used to create assets, so no special arm support is needed -> using amd64 (supported by parcel)
+FROM amd64/node:alpine AS assets
+
+# Create app directory
+WORKDIR /app
+
+# Install python and other dependencies via apk
+RUN apk update && apk add python3 g++ make && rm -rf /var/cache/apk/*
+
+# Install app dependencies
+# A wildcard is used to ensure both package.json AND package-lock.json are copied where available (npm@5+)
+COPY package*.json /app/
+COPY src/frontend /app/src/frontend
+
+# Make a clean npm install and only install modules needed for production
+RUN npm ci
+
+# Build assets
+RUN npm run build
+
+
+# Step 2: create multi stage backend builder (about 800 MB)
 FROM golang:1.17 AS builder
 LABEL stage=intermediate
 RUN go version
 
-WORKDIR /go/src/larmic/
+WORKDIR /app
 
-COPY main.go go.mod go.sum /go/src/larmic/
+COPY main.go /app/
+COPY go.* /app/
+#COPY src/backend /app/src/backend
+COPY --from=assets /app/dist /app/dist
 
 RUN go mod download
 
@@ -47,7 +78,7 @@ RUN if [ "$TARGETPLATFORM" = "linux/amd64" ] ; then \
 # Step 2: create minimal executable image (less than 10 MB)
 FROM scratch
 WORKDIR /root/
-COPY --from=builder /go/src/larmic/main .
+COPY --from=builder /app/main .
 
 EXPOSE 8080
 ENTRYPOINT ["./main"]

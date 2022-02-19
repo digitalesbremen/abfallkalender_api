@@ -14,7 +14,7 @@ docker-build:
 	docker image prune --filter label=stage=intermediate -f
 
 docker-run:
-	docker run -d --rm --name ${CONTAINER_NAME} ${IMAGE_NAME}
+	docker run -p 8080:8080 --rm --name ${CONTAINER_NAME} ${IMAGE_NAME}:${VERSION}
 
 docker-stop:
 	docker stop ${CONTAINER_NAME}

@@ -1,0 +1,20 @@
+{
+  "name": "bremer-abfallkalender-api",
+  "author": "Lars Michaelis",
+  "version": "0.0.1",
+  "description": "TODO",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/digitalesbremen/abfallkalender_api"
+  },
+  "scripts": {
+    "build": "parcel build src/frontend/kalender.js"
+  },
+  "devDependencies": {
+    "parcel": "^2.2.1"
+  },
+  "dependencies": {
+    "chart.js": "^3.7.1",
+    "lit": "^2.1.1"
+  }
+}
