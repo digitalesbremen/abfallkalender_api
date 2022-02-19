@@ -36,7 +36,7 @@ COPY main.go /app/
 COPY go.* /app/
 COPY open-api-3.yaml /app
 COPY VERSION /app
-#COPY src/backend /app/src/backend
+COPY src/backend /app/src/backend
 COPY --from=assets /app/dist /app/dist
 
 RUN go mod download

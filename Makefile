@@ -19,6 +19,9 @@ docker-run:
 docker-stop:
 	docker stop ${CONTAINER_NAME}
 
+heruko-login:
+	heroku login -i
+
 heruko-container-login:
 	heroku container:login
 

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"abfallkalender_api/src/backend/client"
 	_ "embed"
 	"fmt"
 	"github.com/gorilla/mux"
@@ -12,6 +13,11 @@ import (
 
 //go:embed dist/kalender.js
 var content string
+
+const (
+	BaseURL            = "https://web.c-trace.de"
+	InitialContextPath = "/bremenabfallkalender/Abfallkalender"
+)
 
 func main() {
 	log.Println("Hello Bremer Abfallkalender API!!!")
@@ -30,6 +36,11 @@ func main() {
 	}
 
 	log.Printf("Port is set to %s\n", port)
+
+	url, _ := client.NewClient(BaseURL).GetRedirectUrl(InitialContextPath)
+	log.Printf("Base URL is %s", BaseURL)
+	log.Printf("Initial context path is %s", InitialContextPath)
+	log.Printf("Redirect URL is %s", url)
 
 	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
