@@ -61,18 +61,13 @@ func serveOpenApiSpecification(w http.ResponseWriter, _ *http.Request) {
 }
 
 func serveStreets(w http.ResponseWriter, _ *http.Request) {
-	log.Println("servce streets")
 	abfallkalenderClient := client.NewClient(BaseURL)
-	log.Println(abfallkalenderClient)
 	// TODO handle error
 	redirectUrl, _ := abfallkalenderClient.GetRedirectUrl(InitialContextPath)
-	log.Println(redirectUrl)
 	// TODO handle error
 	streets, _ := abfallkalenderClient.GetStreets(redirectUrl)
-	log.Println(streets.Streets)
 	// TODO handle error
 	dto, _ := json.Marshal(streets.Streets)
-	log.Println(dto)
 
 	w.WriteHeader(http.StatusOK)
 	_, _ = w.Write(dto)
