@@ -3,6 +3,7 @@ package main
 import (
 	"abfallkalender_api/src/backend/client"
 	_ "embed"
+	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
 	"io/ioutil"
@@ -25,7 +26,7 @@ func main() {
 	router := mux.NewRouter()
 
 	router.HandleFunc("/component", serveWebComponent).Methods("GET")
-	router.HandleFunc("/hello", helloWorld).Methods("GET")
+	router.HandleFunc("/streets", serveStreets).Methods("GET")
 	router.HandleFunc("/", serveOpenApiSpecification).Methods("GET")
 
 	http.Handle("/", router)
@@ -59,7 +60,20 @@ func serveOpenApiSpecification(w http.ResponseWriter, _ *http.Request) {
 	_, _ = w.Write(dat)
 }
 
-func helloWorld(w http.ResponseWriter, _ *http.Request) {
+func serveStreets(w http.ResponseWriter, _ *http.Request) {
+	log.Println("servce streets")
+	abfallkalenderClient := client.NewClient(BaseURL)
+	log.Println(abfallkalenderClient)
+	// TODO handle error
+	redirectUrl, _ := abfallkalenderClient.GetRedirectUrl(InitialContextPath)
+	log.Println(redirectUrl)
+	// TODO handle error
+	streets, _ := abfallkalenderClient.GetStreets(redirectUrl)
+	log.Println(streets.Streets)
+	// TODO handle error
+	dto, _ := json.Marshal(streets.Streets)
+	log.Println(dto)
+
 	w.WriteHeader(http.StatusOK)
-	_, _ = fmt.Fprintf(w, "Hallo Bremer Abfallkalender API!")
+	_, _ = w.Write(dto)
 }

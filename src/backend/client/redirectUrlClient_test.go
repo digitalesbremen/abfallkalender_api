@@ -10,9 +10,12 @@ func TestGetRedirectUrl(t *testing.T) {
 
 	defer server.Close()
 
-	response, _ := NewClient(server.BaseUrl).GetRedirectUrl(RedirectUrlContextPath)
+	got, _ := NewClient(server.BaseUrl).GetRedirectUrl(RedirectUrlContextPath)
 
-	if response != server.BaseUrl+strings.Replace(RedirectUrlHeader, "/Abfallkalender", "", 1) {
-		t.Fatalf(`NewClient(%s).GetRedirectUrl(%s), got: %s, want: %s`, server.BaseUrl, RedirectUrlContextPath, response, RedirectUrlHeader)
+	// TODO duplicate
+	want := server.BaseUrl + strings.Replace(RedirectUrlHeader, "/Abfallkalender", "", 1)
+
+	if got != want {
+		t.Fatalf(`NewClient(%s).GetRedirectUrl(%s), got: %s, want: %s`, server.BaseUrl, RedirectUrlContextPath, got, want)
 	}
 }
