@@ -20,14 +20,14 @@ HEAD https://web.c-trace.de/bremenabfallkalender/Abfallkalender
 
 
 # OPTIONAL: Die dynamische URL kann genutzt werden, um sämtliche Straßen in Bremen zu bestimmen
-GET {{redirect_url}}/Data/Strassen?ort=Bremen
+GET {{redirect_url}}/Data/Strassen
 Content-Type: application/json
 
 ###
 
 # OPTIONAL: Die dynamische URL zusammen mit einer gewählten Straße kann genutzt werden, um sämtliche
 #           Hausnummern zu einer Straße zu bestimmen!
-GET {{redirect_url}}/Data/Hausnummern?ort=Bremen&strasse=Aachener+Straße
+GET {{redirect_url}}/Data/Hausnummern?strasse=Aachener+Straße
 Content-Type: application/json
 
 ###

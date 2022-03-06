@@ -13,7 +13,7 @@ type errorResponse struct {
 	Message string `json:"message"`
 }
 
-func (c *Client) sendRequest(req *http.Request) (*http.Response, error) {
+func (c *Client) sendRequest(req *http.Request, autoCloseBody bool) (*http.Response, error) {
 	req.Header.Set("Content-Type", "application/json; charset=utf-8")
 	req.Header.Set("Accept", "application/json; charset=utf-8")
 
@@ -22,9 +22,11 @@ func (c *Client) sendRequest(req *http.Request) (*http.Response, error) {
 		return nil, err
 	}
 
-	defer func(Body io.ReadCloser) {
-		_ = Body.Close()
-	}(res.Body)
+	if autoCloseBody {
+		defer func(Body io.ReadCloser) {
+			_ = Body.Close()
+		}(res.Body)
+	}
 
 	if res.StatusCode < http.StatusOK || res.StatusCode >= http.StatusBadRequest {
 		var errRes errorResponse

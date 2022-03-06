@@ -13,19 +13,42 @@ info:
 paths:
   /:
     get:
-      summary: Returns open api documentation
+      summary: Get Open API specification
       responses:
         '200':
-          content: 'application/x-yaml'
-  /hello:
+          description: YAML format
+          content:
+            text/yaml:
+              schema:
+                type: string
+  /api:
     get:
-      summary: Returns a simple text (just for testing)
+      summary: Get Open API specification
       responses:
         '200':
-          content: 'application/text'
-  /component:
+          description: YAML format
+          content:
+            text/yaml:
+              schema:
+                type: string
+  /api/streets:
     get:
-      summary: Returns kalender web component
+      summary: Get all streets of Bremen
       responses:
         '200':
-          content: 'application/javascript'
+          description: a list of all streets of Bremen
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+  /kalender.js:
+    get:
+      summary: Get kalender web component
+      responses:
+        escription: OK
+          content:
+            text/javascript:
+              schema:
+                type: string

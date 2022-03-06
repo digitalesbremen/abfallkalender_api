@@ -18,6 +18,9 @@ RUN apk update && apk add python3 g++ make && rm -rf /var/cache/apk/*
 COPY package*.json /app/
 COPY src/frontend /app/src/frontend
 
+# Create package-lock.json
+#RUN npm i --package-lock-only
+
 # Make a clean npm install and only install modules needed for production
 RUN npm ci
 
@@ -40,6 +43,7 @@ COPY src/backend /app/src/backend
 COPY --from=assets /app/dist /app/dist
 
 RUN go mod download
+RUN go mod tidy # prevent missing go.sum entry for module
 
 RUN go test -v ./...
 
@@ -78,6 +82,11 @@ RUN if [ "$TARGETPLATFORM" = "linux/amd64" ] ; then \
 # Step 2: create minimal executable image (less than 10 MB)
 FROM scratch
 WORKDIR /root/
+
+# copy the ca-certificate.crt from the build stage (prevent x509 certificate signed by unknown authority)
+# see https://stackoverflow.com/questions/52969195/docker-container-running-golang-http-client-getting-error-certificate-signed-by
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+
 COPY --from=builder /app/main .
 COPY --from=builder /app/open-api-3.yaml .
 

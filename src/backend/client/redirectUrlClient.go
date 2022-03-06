@@ -13,7 +13,8 @@ func (c *Client) GetRedirectUrl(contextPath string) (url string, err error) {
 		return "", err
 	}
 
-	response, err := c.sendRequest(req)
+	response, err := c.sendRequest(req, true)
+
 	if err := err; err != nil {
 		return "", err
 	}
