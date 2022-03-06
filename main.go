@@ -10,12 +10,15 @@ import (
 )
 
 //go:embed dist/kalender.js
-var webComponentJS string
+var kalenderJS string
+
+//go:embed dist/kalender.js.map
+var kalenderJSMap string
 
 func main() {
 	log.Println("Hello Bremer Abfallkalender API!!!")
 
-	router := api.NewRouter(webComponentJS)
+	router := api.NewRouter(kalenderJS, kalenderJSMap)
 
 	port := os.Getenv("PORT") // Heroku provides the port to bind to
 	if port == "" {

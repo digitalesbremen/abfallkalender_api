@@ -35,7 +35,13 @@ var routes = Routes{
 	Route{
 		Name:        "Kalender web component",
 		Method:      "GET",
-		Pattern:     "/component",
+		Pattern:     "/kalender.js",
 		HandlerFunc: GetWebComponent,
+	},
+	Route{
+		Name:        "Kalender web component",
+		Method:      "GET",
+		Pattern:     "/kalender.js.map",
+		HandlerFunc: GetWebComponentMap,
 	},
 }
