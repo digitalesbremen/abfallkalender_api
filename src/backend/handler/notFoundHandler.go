@@ -1,4 +1,4 @@
-package api
+package handler
 
 import (
 	"abfallkalender_api/src/backend/model"

@@ -1,6 +1,7 @@
 package api
 
 import (
+	"abfallkalender_api/src/backend/handler"
 	"net/http"
 )
 
@@ -18,30 +19,30 @@ var routes = Routes{
 		Name:        "Open Api documentation (yaml)",
 		Method:      "GET",
 		Pattern:     "/",
-		HandlerFunc: OpenApiDocumentation,
+		HandlerFunc: handler.OpenApiDocumentation,
 	},
 	Route{
 		Name:        "Open Api documentation (yaml)",
 		Method:      "GET",
 		Pattern:     "/api",
-		HandlerFunc: OpenApiDocumentation,
+		HandlerFunc: handler.OpenApiDocumentation,
 	},
 	Route{
 		Name:        "Streets",
 		Method:      "GET",
 		Pattern:     "/api/streets",
-		HandlerFunc: GetStreets,
+		HandlerFunc: handler.GetStreets,
 	},
 	Route{
 		Name:        "Kalender web component",
 		Method:      "GET",
 		Pattern:     "/kalender.js",
-		HandlerFunc: GetWebComponent,
+		HandlerFunc: handler.GetWebComponent,
 	},
 	Route{
 		Name:        "Kalender web component",
 		Method:      "GET",
 		Pattern:     "/kalender.js.map",
-		HandlerFunc: GetWebComponentMap,
+		HandlerFunc: handler.GetWebComponentMap,
 	},
 }
