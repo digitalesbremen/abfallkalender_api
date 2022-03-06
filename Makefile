@@ -36,3 +36,6 @@ heruko-container-logs:
 
 heruko-open-app:
 	heroku open --app bremer-abfallkalender-api
+
+parcel-update-package-lock:
+	npm i --package-lock-only
