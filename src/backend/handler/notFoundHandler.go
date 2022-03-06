@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"abfallkalender_api/src/backend/model"
+	"abfallkalender_api/src/backend/handler/model"
 	"encoding/json"
 	"log"
 	"net/http"

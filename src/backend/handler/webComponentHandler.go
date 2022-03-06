@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"abfallkalender_api/src/backend"
 	"fmt"
 	"net/http"
 )
@@ -9,11 +8,11 @@ import (
 func GetWebComponent(w http.ResponseWriter, _ *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "text/javascript; charset=UTF-8")
-	_, _ = fmt.Fprint(w, api.KalenderJS)
+	_, _ = fmt.Fprint(w, KalenderJS)
 }
 
 func GetWebComponentMap(w http.ResponseWriter, _ *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "text/javascript; charset=UTF-8")
-	_, _ = fmt.Fprint(w, api.KalenderJSMap)
+	_, _ = fmt.Fprint(w, KalenderJSMap)
 }
