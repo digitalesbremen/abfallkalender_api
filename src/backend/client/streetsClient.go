@@ -7,13 +7,9 @@ import (
 	"net/http"
 )
 
-type Response struct {
-	Streets []string
-}
+type Streets []string
 
-type jsonData []string
-
-func (c *Client) GetStreets(redirectUrl string) (response *Response, err error) {
+func (c *Client) GetStreets(redirectUrl string) (response Streets, err error) {
 	request, err := http.NewRequest("GET", fmt.Sprintf("%s%s", redirectUrl, "/Data/Strassen"), nil)
 
 	// TODO make it cleaner! command - if err - command - if err - command if err?
@@ -37,7 +33,7 @@ func (c *Client) GetStreets(redirectUrl string) (response *Response, err error) 
 		return nil, err
 	}
 
-	streets := make(jsonData, 0)
+	streets := make(Streets, 0)
 	err = json.Unmarshal(s, &streets)
 
 	if err != nil {
@@ -46,10 +42,10 @@ func (c *Client) GetStreets(redirectUrl string) (response *Response, err error) 
 
 	streets.deleteEmptyStreets()
 
-	return &Response{Streets: streets}, nil
+	return streets, nil
 }
 
-func (l *jsonData) deleteEmptyStreets() {
+func (l *Streets) deleteEmptyStreets() {
 	var r []string
 	for _, str := range *l {
 		if str != "" {

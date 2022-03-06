@@ -67,7 +67,7 @@ func serveStreets(w http.ResponseWriter, _ *http.Request) {
 	// TODO handle error
 	streets, _ := abfallkalenderClient.GetStreets(redirectUrl)
 	// TODO handle error
-	dto, _ := json.Marshal(streets.Streets)
+	dto, _ := json.Marshal(streets)
 
 	w.WriteHeader(http.StatusOK)
 	_, _ = w.Write(dto)

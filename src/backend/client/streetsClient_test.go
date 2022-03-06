@@ -13,34 +13,34 @@ func TestGetStreets(t *testing.T) {
 	// TODO duplicate
 	baseUrl := server.BaseUrl + strings.Replace(RedirectUrlHeader, "/Abfallkalender", "", 1)
 
-	response, _ := NewClient(server.BaseUrl).GetStreets(baseUrl)
+	streets, _ := NewClient(server.BaseUrl).GetStreets(baseUrl)
 
-	if len(response.Streets) != 4 {
-		t.Fatalf(`ReadStreets(%s) should contain %d entries but was %d`, server.BaseUrl, 4, len(response.Streets))
+	if len(streets) != 4 {
+		t.Fatalf(`ReadStreets(%s) should contain %d entries but was %d`, server.BaseUrl, 4, len(streets))
 	}
-	if response.notContains("Aachener Straße") {
+	if streets.notContains("Aachener Straße") {
 		t.Fatalf(`ReadStreets(%s) should contain %s`, server.BaseUrl, "Aachener Straße")
 	}
-	if response.notContains("Lars-Krüger-Hof") {
+	if streets.notContains("Lars-Krüger-Hof") {
 		t.Fatalf(`ReadStreets(%s) should contain %s`, server.BaseUrl, "Lars-Krüger-Hof")
 	}
-	if response.notContains("Lars-Krüger-Hof") {
+	if streets.notContains("Lars-Krüger-Hof") {
 		t.Fatalf(`ReadStreets(%s) should contain %s`, server.BaseUrl, "Lars-Krüger-Hof")
 	}
-	if response.notContains("Züricher Straße") {
+	if streets.notContains("Züricher Straße") {
 		t.Fatalf(`ReadStreets(%s) should contain %s`, server.BaseUrl, "Züricher Straße")
 	}
-	if response.contains("") {
+	if streets.contains("") {
 		t.Fatalf(`ReadStreets(%s) should not contain empty string`, server.BaseUrl)
 	}
 }
 
-func (r Response) notContains(e string) bool {
+func (r Streets) notContains(e string) bool {
 	return !r.contains(e)
 }
 
-func (r Response) contains(e string) bool {
-	for _, a := range r.Streets {
+func (r Streets) contains(e string) bool {
+	for _, a := range r {
 		if a == e {
 			return true
 		}
