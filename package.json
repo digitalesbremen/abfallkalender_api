@@ -10,11 +10,11 @@
   "scripts": {
     "build": "parcel build src/frontend/kalender.js"
   },
-  "devDependencies": {
-    "parcel": "^2.2.1"
-  },
   "dependencies": {
-    "chart.js": "^3.7.1",
-    "lit": "^2.1.1"
+    "chart.js": "3.7.1",
+    "lit": "2.1.1"
+  },
+  "devDependencies": {
+    "parcel": "2.2.1"
   }
 }

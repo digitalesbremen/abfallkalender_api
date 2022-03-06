@@ -18,6 +18,9 @@ RUN apk update && apk add python3 g++ make && rm -rf /var/cache/apk/*
 COPY package*.json /app/
 COPY src/frontend /app/src/frontend
 
+# Create package-lock.json
+#RUN npm i --package-lock-only
+
 # Make a clean npm install and only install modules needed for production
 RUN npm ci
 
