@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - 'main'
-      - 'feature/add_streets_endpoint'
 
 env:
   IMAGE_NAME: larmic/abfallkalender_api
