@@ -40,6 +40,7 @@ COPY src/backend /app/src/backend
 COPY --from=assets /app/dist /app/dist
 
 RUN go mod download
+RUN go mod tidy # prevent missing go.sum entry for module
 
 RUN go test -v ./...
 
