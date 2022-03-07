@@ -8,6 +8,7 @@ import (
 	"net/url"
 )
 
+// GetStreets TODO test me
 func GetStreets(w http.ResponseWriter, r *http.Request) {
 	abfallkalenderClient := client.NewClient(BaseURL)
 	// TODO handle error

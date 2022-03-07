@@ -38,17 +38,44 @@ paths:
         '200':
           description: a list of all streets of Bremen
           content:
-            application/json:
+            application/hal+json:
               schema:
-                type: array
-                items:
-                  type: string
+                $href: '#/components/schemas/_embedded'
   /kalender.js:
     get:
       summary: Get kalender web component
       responses:
-        escription: OK
+        '200':
+          description: a kalender web component to embedd
           content:
             text/javascript:
               schema:
                 type: string
+
+components:
+  schemas:
+    _embedded:
+      properties:
+        streets:
+          type: array
+          items:
+            $href: '#/components/schemas/Street'
+    Street:
+      properties:
+        name:
+          type: string
+          description: street name
+        _links:
+          $href: '#/components/schemas/SelfLink'
+          description: Resource URL
+    Links:
+      properties:
+        self:
+          $href: '#/components/schemas/SelfLink'
+          description: Resource URL
+    SelfLink:
+      properties:
+        href:
+          type: string
+          description: Resource URL
+
