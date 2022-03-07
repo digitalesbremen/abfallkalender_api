@@ -1,11 +1,15 @@
 package handler
 
 import (
-	"abfallkalender_api/src/backend/handler/model"
 	"encoding/json"
 	"log"
 	"net/http"
 )
+
+type protocolError struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+}
 
 func Handle404() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -17,7 +21,7 @@ func Handle404() http.Handler {
 		_ = json.
 			NewEncoder(w).
 			Encode(
-				model.ProtocolError{
+				protocolError{
 					Code:    http.StatusNotFound,
 					Message: http.StatusText(http.StatusNotFound),
 				})
