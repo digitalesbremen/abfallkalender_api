@@ -7,10 +7,10 @@ import (
 	"net/http"
 )
 
-type Streets []string
+type HouseNumbers []string
 
-func (c *Client) GetStreets(redirectUrl string) (response Streets, err error) {
-	request, err := http.NewRequest("GET", fmt.Sprintf("%s%s", redirectUrl, "/Data/Strassen"), nil)
+func (c *Client) GetHouseNumbers(redirectUrl string, streetName string) (response HouseNumbers, err error) {
+	request, err := http.NewRequest("GET", buildUrl(redirectUrl, streetName), nil)
 
 	// TODO make it cleaner! command - if err - command - if err - command if err?
 	if err != nil {
@@ -33,20 +33,24 @@ func (c *Client) GetStreets(redirectUrl string) (response Streets, err error) {
 		return nil, err
 	}
 
-	streets := make(Streets, 0)
-	err = json.Unmarshal(s, &streets)
+	houseNumbers := make(HouseNumbers, 0)
+	err = json.Unmarshal(s, &houseNumbers)
 
 	if err != nil {
 		return nil, err
 	}
 
 	// TODO trim values?
-	streets.deleteEmptyStreets()
+	houseNumbers.deleteEmptyStreets()
 
-	return streets, nil
+	return houseNumbers, nil
 }
 
-func (l *Streets) deleteEmptyStreets() {
+func buildUrl(redirectUrl string, streetName string) string {
+	return fmt.Sprintf("%s%s%s", redirectUrl, "/Data/Hausnummern?strasse=", streetName)
+}
+
+func (l *HouseNumbers) deleteEmptyStreets() {
 	var r []string
 	for _, str := range *l {
 		if str != "" {

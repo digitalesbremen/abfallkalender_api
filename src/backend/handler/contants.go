@@ -1,4 +1,4 @@
-package api
+package handler
 
 const (
 	BaseURL            = "https://web.c-trace.de"

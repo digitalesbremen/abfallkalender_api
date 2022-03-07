@@ -38,17 +38,74 @@ paths:
         '200':
           description: a list of all streets of Bremen
           content:
-            application/json:
+            application/hal+json:
               schema:
-                type: array
-                items:
-                  type: string
+                $href: '#/components/schemas/Streets'
+  /api/street/{streetName}:
+    get:
+      summary: Get specific street incl. house numbers in Bremen
+      responses:
+        '200':
+          description: a street with all existing house numbers in Bremen
+          content:
+            application/hal+json:
+              schema:
+                $href: '#/components/schemas/_embedded'
   /kalender.js:
     get:
       summary: Get kalender web component
       responses:
-        escription: OK
+        '200':
+          description: a kalender web component to embedd
           content:
             text/javascript:
               schema:
                 type: string
+
+components:
+  schemas:
+    Street:
+      properties:
+        name:
+          type: string
+          description: street name
+        houseNumbers:
+          type: array
+          items:
+            $ref: '#/components/schemas/HouseNumber'
+        _links:
+          $href: '#/components/schemas/SelfLink'
+          description: Street resource URL
+    Streets:
+      properties:
+        streets:
+          type: array
+          items:
+            $href: '#/components/schemas/StreetName'
+    StreetName:
+      properties:
+        name:
+          type: string
+          description: street name
+        _links:
+          $href: '#/components/schemas/SelfLink'
+          description: Street resource URL
+    HouseNumber:
+      properties:
+        number:
+          type: string
+          description: house number
+        _links:
+          $href: '#/components/schemas/SelfLink'
+          description: House number resource URL
+    Links:
+      properties:
+        self:
+          $href: '#/components/schemas/SelfLink'
+          description: Resource URL
+    SelfLink:
+      properties:
+        href:
+          type: string
+          description: Resource URL
+
