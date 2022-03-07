@@ -1,7 +1,7 @@
 package api
 
 import (
-	handler2 "abfallkalender_api/src/backend/handler"
+	"abfallkalender_api/src/backend/handler"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -9,19 +9,21 @@ import (
 
 func NewRouter(kalenderJS string, kalenderJSMap string) *mux.Router {
 	router := mux.NewRouter().StrictSlash(true)
-	router.NotFoundHandler = handler2.Handle404()
+	router.NotFoundHandler = handler.Handle404()
+
+	// TODO signal handler
 
 	for _, route := range routes {
-		var handler http.Handler
+		var httpHandler http.Handler
 
-		handler = route.HandlerFunc
-		handler = handler2.Logger(handler, route.Name, kalenderJS, kalenderJSMap)
+		httpHandler = route.HandlerFunc
+		httpHandler = handler.Logger(httpHandler, route.Name, kalenderJS, kalenderJSMap)
 
 		router.
 			Methods(route.Method).
 			Path(route.Pattern).
 			Name(route.Name).
-			Handler(handler)
+			Handler(httpHandler)
 	}
 
 	return router

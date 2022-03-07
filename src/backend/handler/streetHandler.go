@@ -28,16 +28,31 @@ type houseNumberDto struct {
 	} `json:"_links"`
 }
 
+type ClientCaller interface {
+	GetRedirectUrl(url string) (string, error)
+	GetHouseNumbers(url string, streetName string) (client.HouseNumbers, error)
+}
+
+type Controller struct {
+	Client ClientCaller
+}
+
+func NewController() Controller {
+	return Controller{
+		Client: client.NewClient(BaseURL),
+	}
+}
+
 // GetStreet TODO test me
-func GetStreet(w http.ResponseWriter, r *http.Request) {
+func (c Controller) GetStreet(w http.ResponseWriter, r *http.Request) {
 	streetName := parseStreetName(r)
 
-	abfallkalenderClient := client.NewClient(BaseURL)
+	//abfallkalenderClient := client.NewClient(BaseURL)
 	// TODO handle error
-	redirectUrl, _ := abfallkalenderClient.GetRedirectUrl(InitialContextPath)
+	redirectUrl, _ := c.Client.GetRedirectUrl(InitialContextPath)
 	// TODO handle error
 	// TODO handle houseNumbers are empty -> 404?
-	houseNumbers, _ := abfallkalenderClient.GetHouseNumbers(redirectUrl, url.QueryEscape(streetName))
+	houseNumbers, _ := c.Client.GetHouseNumbers(redirectUrl, url.QueryEscape(streetName))
 
 	var numbers []houseNumberDto
 
