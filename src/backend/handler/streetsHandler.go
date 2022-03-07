@@ -51,5 +51,6 @@ func GetStreets(w http.ResponseWriter, r *http.Request) {
 }
 
 func buildStreetUrl(r *http.Request, streetName string) string {
-	return "https://" + r.URL.Scheme + "://" + r.Host + "/api/street/" + url.QueryEscape(streetName)
+	// TODO use fmt.printf
+	return "https://" + r.Host + "/api/street/" + url.QueryEscape(streetName)
 }

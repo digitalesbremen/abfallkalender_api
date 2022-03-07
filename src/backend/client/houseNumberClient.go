@@ -40,6 +40,7 @@ func (c *Client) GetHouseNumbers(redirectUrl string, streetName string) (respons
 		return nil, err
 	}
 
+	// TODO trim values?
 	houseNumbers.deleteEmptyStreets()
 
 	return houseNumbers, nil
