@@ -9,25 +9,6 @@ import (
 	"strings"
 )
 
-type streetWithHouseNumbersDto struct {
-	Name         string           `json:"name"`
-	HouseNumbers []houseNumberDto `json:"houseNumbers"`
-	Links        struct {
-		Self struct {
-			Href string `json:"href"`
-		} `json:"self"`
-	} `json:"_links"`
-}
-
-type houseNumberDto struct {
-	Number string `json:"number"`
-	Links  struct {
-		Self struct {
-			Href string `json:"href"`
-		} `json:"self"`
-	} `json:"_links"`
-}
-
 type ClientCaller interface {
 	GetRedirectUrl(url string) (string, error)
 	GetHouseNumbers(url string, streetName string) (client.HouseNumbers, error)
@@ -43,11 +24,9 @@ func NewController() Controller {
 	}
 }
 
-// GetStreet TODO test me
 func (c Controller) GetStreet(w http.ResponseWriter, r *http.Request) {
 	streetName := parseStreetName(r)
 
-	//abfallkalenderClient := client.NewClient(BaseURL)
 	// TODO handle error
 	redirectUrl, _ := c.Client.GetRedirectUrl(InitialContextPath)
 	// TODO handle error
@@ -76,6 +55,25 @@ func (c Controller) GetStreet(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("content-type", "application/json; charset=utf-8")
 	_, _ = w.Write(dto)
+}
+
+type streetWithHouseNumbersDto struct {
+	Name         string           `json:"name"`
+	HouseNumbers []houseNumberDto `json:"houseNumbers"`
+	Links        struct {
+		Self struct {
+			Href string `json:"href"`
+		} `json:"self"`
+	} `json:"_links"`
+}
+
+type houseNumberDto struct {
+	Number string `json:"number"`
+	Links  struct {
+		Self struct {
+			Href string `json:"href"`
+		} `json:"self"`
+	} `json:"_links"`
 }
 
 func parseStreetName(r *http.Request) string {
