@@ -124,6 +124,5 @@ func parseStreetName(r *http.Request) string {
 }
 
 func buildHouseNumberUrl(r *http.Request, streetName string, houseNumber string) string {
-	// TODO use fmt.printf
-	return "https://" + r.Host + "/api/street/" + url.QueryEscape(streetName) + "/number/" + url.QueryEscape(houseNumber)
+	return fmt.Sprintf("https://%s/api/street/%s/number/%s", r.Host, url.QueryEscape(streetName), url.QueryEscape(houseNumber))
 }
