@@ -14,8 +14,12 @@ func (c Controller) GetStreets(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO handle error
-	streets, _ := c.Client.GetStreets(redirectUrl)
+	streets, err := c.Client.GetStreets(redirectUrl)
+
+	if err != nil {
+		c.createInternalServerError(w, err)
+		return
+	}
 
 	var streetDtos []streetDto
 
@@ -29,8 +33,12 @@ func (c Controller) GetStreets(w http.ResponseWriter, r *http.Request) {
 	streetsDto := streetsDto{}
 	streetsDto.Embedded.Streets = streetDtos
 
-	// TODO handle error
-	dto, _ := json.Marshal(streetsDto)
+	dto, err := json.Marshal(streetsDto)
+
+	if err != nil {
+		c.createInternalServerError(w, err)
+		return
+	}
 
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("content-type", "application/json; charset=utf-8")
