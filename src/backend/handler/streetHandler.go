@@ -35,11 +35,15 @@ func (c Controller) GetStreet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO handle houseNumbers are empty -> 404?
 	houseNumbers, err := c.Client.GetHouseNumbers(redirectUrl, url.QueryEscape(streetName))
 
 	if err != nil {
 		c.createInternalServerError(w, err)
+		return
+	}
+
+	if len(houseNumbers) == 0 {
+		c.createNotFoundError(w, streetName, err)
 		return
 	}
 
@@ -59,8 +63,12 @@ func (c Controller) GetStreet(w http.ResponseWriter, r *http.Request) {
 
 	streetsDto.Links.Self.Href = buildStreetUrl(r, streetName)
 
-	// TODO handle error
-	dto, _ := json.Marshal(streetsDto)
+	dto, err := json.Marshal(streetsDto)
+
+	if err != nil {
+		c.createInternalServerError(w, err)
+		return
+	}
 
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("content-type", "application/json; charset=utf-8")
@@ -69,12 +77,25 @@ func (c Controller) GetStreet(w http.ResponseWriter, r *http.Request) {
 
 func (c Controller) createInternalServerError(w http.ResponseWriter, err error) {
 	fmt.Println(err)
+	w.WriteHeader(http.StatusInternalServerError)
 	_ = json.
 		NewEncoder(w).
 		Encode(
 			protocolError{
 				Code:    http.StatusInternalServerError,
 				Message: http.StatusText(http.StatusInternalServerError),
+			})
+}
+
+func (c Controller) createNotFoundError(w http.ResponseWriter, streetName string, err error) {
+	fmt.Println(err)
+	w.WriteHeader(http.StatusNotFound)
+	_ = json.
+		NewEncoder(w).
+		Encode(
+			protocolError{
+				Code:    http.StatusNotFound,
+				Message: fmt.Sprintf("Street '%s' or house numbers not found", streetName),
 			})
 }
 

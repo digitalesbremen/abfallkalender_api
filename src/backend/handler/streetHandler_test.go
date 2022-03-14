@@ -82,6 +82,28 @@ func TestGetHouseNumbersReturnsError(t *testing.T) {
 	}
 }
 
+func TestGetHouseNumbersAreEmpty(t *testing.T) {
+	clientMock.houseNumbers = []string{}
+
+	data := sendRequest(t, controller, "Aachener Straße")
+
+	dto := protocolError{}
+	err := json.Unmarshal(data, &dto)
+
+	if err != nil {
+		t.Errorf("expected error to be nil got %v", err)
+	}
+	if dto.Code != 404 {
+		t.Errorf("expected http code to be %d got %d", 404, dto.Code)
+	}
+
+	expectedMessage := "Street 'Aachener Straße' or house numbers not found"
+
+	if dto.Message != expectedMessage {
+		t.Errorf("expected http error message to be %s got %s", expectedMessage, dto.Message)
+	}
+}
+
 func sendRequest(t *testing.T, controller Controller, streetName string) []byte {
 	request := createTestRequest(streetName)
 	writer := httptest.NewRecorder()
