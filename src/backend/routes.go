@@ -31,7 +31,7 @@ var routes = Routes{
 		Name:        "Streets",
 		Method:      "GET",
 		Pattern:     "/api/streets",
-		HandlerFunc: handler.GetStreets,
+		HandlerFunc: handler.NewController().GetStreets,
 	},
 	Route{
 		Name:        "Street",
