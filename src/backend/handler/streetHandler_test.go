@@ -40,7 +40,7 @@ func TestGetStreetHappyPath(t *testing.T) {
 	dto.verifyHouseNumber(t, streetName, "2-10")
 }
 
-func TestRedirectUrlReturnsError(t *testing.T) {
+func TestGetStreetRedirectUrlReturnsError(t *testing.T) {
 	controller.Client = &ClientMock{
 		redirectError: errors.New("cannot get redirect URL"),
 	}
@@ -61,7 +61,7 @@ func TestRedirectUrlReturnsError(t *testing.T) {
 	}
 }
 
-func TestGetHouseNumbersReturnsError(t *testing.T) {
+func TestGetStreetGetHouseNumbersReturnsError(t *testing.T) {
 	controller.Client = &ClientMock{
 		redirectURL:          "www.mock.com/redirect",
 		getHouseNumbersError: errors.New("cannot get house numbers"),
@@ -83,7 +83,7 @@ func TestGetHouseNumbersReturnsError(t *testing.T) {
 	}
 }
 
-func TestGetHouseNumbersAreEmpty(t *testing.T) {
+func TestGetStreetGetHouseNumbersAreEmpty(t *testing.T) {
 	controller.Client = &ClientMock{
 		redirectURL:  "www.mock.com/redirect",
 		houseNumbers: []string{},

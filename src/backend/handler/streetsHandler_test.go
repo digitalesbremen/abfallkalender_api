@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -24,6 +25,27 @@ func TestGetStreetsHappyPath(t *testing.T) {
 	}
 
 	// TODO verify dto
+}
+
+func TestGetStreetsRedirectUrlReturnsError(t *testing.T) {
+	controller.Client = &ClientMock{
+		redirectError: errors.New("cannot get redirect URL"),
+	}
+
+	data := sendGetStreetsRequest(t, controller)
+
+	dto := protocolError{}
+	err := json.Unmarshal(data, &dto)
+
+	if err != nil {
+		t.Errorf("expected error to be nil got %v", err)
+	}
+	if dto.Code != 500 {
+		t.Errorf("expected http code to be %d got %d", 500, dto.Code)
+	}
+	if dto.Message != "Internal Server Error" {
+		t.Errorf("expected http error message to be %s got %s", "Internal Server Error", dto.Message)
+	}
 }
 
 func sendGetStreetsRequest(t *testing.T, controller Controller) []byte {

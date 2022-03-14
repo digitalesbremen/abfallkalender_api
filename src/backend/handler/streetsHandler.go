@@ -6,10 +6,14 @@ import (
 	"net/url"
 )
 
-// GetStreets TODO test me
 func (c Controller) GetStreets(w http.ResponseWriter, r *http.Request) {
-	// TODO handle error
-	redirectUrl, _ := c.Client.GetRedirectUrl(InitialContextPath)
+	redirectUrl, err := c.Client.GetRedirectUrl(InitialContextPath)
+
+	if err != nil {
+		c.createInternalServerError(w, err)
+		return
+	}
+
 	// TODO handle error
 	streets, _ := c.Client.GetStreets(redirectUrl)
 

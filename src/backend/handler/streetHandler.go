@@ -77,6 +77,7 @@ func (c Controller) GetStreet(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write(dto)
 }
 
+// TODO extract (used in multiple files
 func (c Controller) createInternalServerError(w http.ResponseWriter, err error) {
 	fmt.Println(err)
 	w.WriteHeader(http.StatusInternalServerError)
