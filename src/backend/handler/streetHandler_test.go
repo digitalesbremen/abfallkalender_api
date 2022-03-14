@@ -13,24 +13,30 @@ import (
 )
 
 type ClientMock struct {
-	called bool
+	redirectURL  string
+	houseNumbers []string
 }
 
 func (mt *ClientMock) GetRedirectUrl(_ string) (string, error) {
-	mt.called = true
-	return "www.mock.com/redirect", nil
+	return mt.redirectURL, nil
 }
 
 func (mt *ClientMock) GetHouseNumbers(_ string, _ string) (client.HouseNumbers, error) {
 	numbers := client.HouseNumbers{}
-	numbers = append(numbers, "2")
-	numbers = append(numbers, "2-10")
+
+	for _, number := range mt.houseNumbers {
+		numbers = append(numbers, number)
+	}
+
 	return numbers, nil
 }
 
 func TestHappyPath(t *testing.T) {
 	controller := Controller{
-		Client: &ClientMock{},
+		Client: &ClientMock{
+			redirectURL:  "www.mock.com/redirect",
+			houseNumbers: []string{"2", "2-10"},
+		},
 	}
 
 	streetName := "Aachener Straße"
