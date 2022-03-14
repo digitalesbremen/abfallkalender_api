@@ -21,8 +21,8 @@ func main() {
 	router := api.NewRouter(kalenderJS, kalenderJSMap)
 
 	// TODO use os.lookup env
-	port := os.Getenv("PORT") // Heroku provides the port to bind to
-	if port == "" {
+	port, portSet := os.LookupEnv("PORT")
+	if !portSet {
 		port = "8080"
 	}
 

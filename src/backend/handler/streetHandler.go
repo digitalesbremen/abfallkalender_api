@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-// TODO move or split?
+// ClientCaller TODO move or split?
 type ClientCaller interface {
 	GetRedirectUrl(url string) (string, error)
 	GetHouseNumbers(url string, streetName string) (client.HouseNumbers, error)
