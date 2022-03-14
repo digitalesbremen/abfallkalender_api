@@ -25,9 +25,7 @@ func (c *Client) GetStreets(redirectUrl string) (response Streets, err error) {
 
 	s, err := io.ReadAll(resp.Body)
 
-	defer func(Body io.ReadCloser) {
-		_ = Body.Close()
-	}(resp.Body)
+	_ = resp.Body.Close()
 
 	if err != nil {
 		return nil, err

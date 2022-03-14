@@ -20,13 +20,15 @@ func main() {
 
 	router := api.NewRouter(kalenderJS, kalenderJSMap)
 
-	port := os.Getenv("PORT") // Heroku provides the port to bind to
-	if port == "" {
+	// TODO use os.lookup env
+	port, portSet := os.LookupEnv("PORT")
+	if !portSet {
 		port = "8080"
 	}
 
 	log.Printf("Port is set to %s\n", port)
 
+	// TODO use go routine / non blocking
 	log.Fatal(http.ListenAndServe(":"+port,
 		handlers.CompressHandler(
 			handlers.CORS(

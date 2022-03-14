@@ -19,19 +19,19 @@ func TestGetHouseNumbers(t *testing.T) {
 		t.Fatalf(`ReadStreets(%s) should contain %d entries but was %d`, server.BaseUrl, 4, len(houseNumbers))
 	}
 	if houseNumbers.notContains("0") {
-		t.Fatalf(`ReadStreets(%s) should contain %s`, server.BaseUrl, "Aachener Straße")
+		t.Fatalf(`GetHouseNumbers(%s) should contain %s`, server.BaseUrl, "0")
 	}
 	if houseNumbers.notContains("2") {
-		t.Fatalf(`ReadStreets(%s) should contain %s`, server.BaseUrl, "Lars-Krüger-Hof")
+		t.Fatalf(`GetHouseNumbers(%s) should contain %s`, server.BaseUrl, "2")
 	}
 	if houseNumbers.notContains("2-10") {
-		t.Fatalf(`ReadStreets(%s) should contain %s`, server.BaseUrl, "Lars-Krüger-Hof")
+		t.Fatalf(`GetHouseNumbers(%s) should contain %s`, server.BaseUrl, "2-10")
 	}
 	if houseNumbers.notContains("3") {
-		t.Fatalf(`ReadStreets(%s) should contain %s`, server.BaseUrl, "Züricher Straße")
+		t.Fatalf(`GetHouseNumbers(%s) should contain %s`, server.BaseUrl, "3")
 	}
 	if houseNumbers.contains("") {
-		t.Fatalf(`ReadStreets(%s) should not contain empty string`, server.BaseUrl)
+		t.Fatalf(`GetHouseNumbers(%s) should not contain empty string`, server.BaseUrl)
 	}
 }
 

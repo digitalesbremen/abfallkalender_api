@@ -6,10 +6,10 @@ import (
 	"time"
 )
 
-// KalenderJS TODO parameter to handler
+// KalenderJS TODO move parameter to handler
 var KalenderJS = ""
 
-// KalenderJSMap TODO parameter to handler
+// KalenderJSMap TODO move parameter to handler
 var KalenderJSMap = ""
 
 func Logger(inner http.Handler, name string, kalenderJS string, kalenderJSMap string) http.Handler {

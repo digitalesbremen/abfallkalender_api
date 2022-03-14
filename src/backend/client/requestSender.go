@@ -13,11 +13,12 @@ type errorResponse struct {
 	Message string `json:"message"`
 }
 
-func (c *Client) sendRequest(req *http.Request, autoCloseBody bool) (*http.Response, error) {
-	req.Header.Set("Content-Type", "application/json; charset=utf-8")
-	req.Header.Set("Accept", "application/json; charset=utf-8")
+func (c *Client) sendRequest(originalRequest *http.Request, autoCloseBody bool) (*http.Response, error) {
+	request := originalRequest
+	request.Header.Set("Content-Type", "application/json; charset=utf-8")
+	request.Header.Set("Accept", "application/json; charset=utf-8")
 
-	res, err := c.HTTPClient.Do(req)
+	res, err := c.HTTPClient.Do(request)
 	if err != nil {
 		return nil, err
 	}

@@ -31,13 +31,13 @@ var routes = Routes{
 		Name:        "Streets",
 		Method:      "GET",
 		Pattern:     "/api/streets",
-		HandlerFunc: handler.GetStreets,
+		HandlerFunc: handler.NewController().GetStreets,
 	},
 	Route{
 		Name:        "Street",
 		Method:      "GET",
 		Pattern:     "/api/street/{street}",
-		HandlerFunc: handler.GetStreet,
+		HandlerFunc: handler.NewController().GetStreet,
 	},
 	Route{
 		Name:        "Kalender web component",
