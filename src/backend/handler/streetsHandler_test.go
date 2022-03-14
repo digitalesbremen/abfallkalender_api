@@ -3,9 +3,11 @@ package handler
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"testing"
 )
 
@@ -24,7 +26,12 @@ func TestGetStreetsHappyPath(t *testing.T) {
 		t.Errorf("expected error to be nil got %v", err)
 	}
 
-	// TODO verify dto
+	if len(dto.Embedded.Streets) != 2 {
+		t.Errorf("expected number of streets to be 2 got %v", len(dto.Embedded.Streets))
+	}
+
+	dto.verifyStreet(t, "Aachener Straße")
+	dto.verifyStreet(t, "Eisenbahnerweg II (KG Grolland)")
 }
 
 func TestGetStreetsRedirectUrlClientReturnsError(t *testing.T) {
@@ -91,4 +98,28 @@ func sendGetStreetsRequest(t *testing.T, controller Controller) []byte {
 func createTestGetStreetsRequest() *http.Request {
 	testUrl := "http://www.mock.com/api/streets/"
 	return httptest.NewRequest(http.MethodGet, testUrl, nil)
+}
+
+func (dto streetsDto) verifyStreet(t *testing.T, streetName string) {
+	street := dto.getStreet(streetName)
+
+	if street == nil {
+		t.Errorf(`streets should contain %s`, streetName)
+	}
+
+	expected := fmt.Sprintf("https://www.mock.com/api/street/%s", url.QueryEscape(streetName))
+
+	if street != nil && street.Links.Self.Href != expected {
+		t.Errorf("expected street self link %s got %s", expected, street.Links.Self.Href)
+	}
+}
+
+func (dto streetsDto) getStreet(streetName string) *streetDto {
+	for _, street := range dto.Embedded.Streets {
+		if street.Name == streetName {
+			return &street
+		}
+	}
+
+	return nil
 }

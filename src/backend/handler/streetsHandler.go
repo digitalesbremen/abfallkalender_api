@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/url"
 )
@@ -46,8 +47,7 @@ func (c Controller) GetStreets(w http.ResponseWriter, r *http.Request) {
 }
 
 func buildStreetUrl(r *http.Request, streetName string) string {
-	// TODO use fmt.printf
-	return "https://" + r.Host + "/api/street/" + url.QueryEscape(streetName)
+	return fmt.Sprintf("https://%s/api/street/%s", r.Host, url.QueryEscape(streetName))
 }
 
 type streetsDto struct {
