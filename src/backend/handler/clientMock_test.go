@@ -9,6 +9,15 @@ type ClientMock struct {
 	getHouseNumbersError error
 }
 
+var clientMock = &ClientMock{
+	redirectURL:  "www.mock.com/redirect",
+	houseNumbers: []string{"2", "2-10"},
+}
+
+var controller = Controller{
+	Client: clientMock,
+}
+
 func (mt *ClientMock) GetRedirectUrl(_ string) (string, error) {
 	if mt.redirectError != nil {
 		return "", mt.redirectError
@@ -29,4 +38,8 @@ func (mt *ClientMock) GetHouseNumbers(_ string, _ string) (client.HouseNumbers, 
 	}
 
 	return numbers, nil
+}
+
+func (mt *ClientMock) GetStreets(redirectUrl string) (response client.Streets, err error) {
+	return nil, nil
 }

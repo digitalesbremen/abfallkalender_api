@@ -10,9 +10,11 @@ import (
 	"strings"
 )
 
+// TODO move or split?
 type ClientCaller interface {
 	GetRedirectUrl(url string) (string, error)
 	GetHouseNumbers(url string, streetName string) (client.HouseNumbers, error)
+	GetStreets(redirectUrl string) (response client.Streets, err error)
 }
 
 type Controller struct {

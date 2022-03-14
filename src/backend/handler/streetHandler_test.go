@@ -12,19 +12,10 @@ import (
 	"testing"
 )
 
-var clientMock = &ClientMock{
-	redirectURL:  "www.mock.com/redirect",
-	houseNumbers: []string{"2", "2-10"},
-}
-
-var controller = Controller{
-	Client: clientMock,
-}
-
-func TestHappyPath(t *testing.T) {
+func TestGetStreetHappyPath(t *testing.T) {
 	streetName := "Aachener Straße"
 
-	data := sendRequest(t, controller, streetName)
+	data := sendGetStreetRequest(t, controller, streetName)
 
 	dto := streetWithHouseNumbersDto{}
 	err := json.Unmarshal(data, &dto)
@@ -47,7 +38,7 @@ func TestHappyPath(t *testing.T) {
 func TestRedirectUrlReturnsError(t *testing.T) {
 	clientMock.redirectError = errors.New("cannot get redirect URL")
 
-	data := sendRequest(t, controller, "Aachener Straße")
+	data := sendGetStreetRequest(t, controller, "Aachener Straße")
 
 	dto := protocolError{}
 	err := json.Unmarshal(data, &dto)
@@ -66,7 +57,7 @@ func TestRedirectUrlReturnsError(t *testing.T) {
 func TestGetHouseNumbersReturnsError(t *testing.T) {
 	clientMock.getHouseNumbersError = errors.New("cannot get house numbers")
 
-	data := sendRequest(t, controller, "Aachener Straße")
+	data := sendGetStreetRequest(t, controller, "Aachener Straße")
 
 	dto := protocolError{}
 	err := json.Unmarshal(data, &dto)
@@ -85,7 +76,7 @@ func TestGetHouseNumbersReturnsError(t *testing.T) {
 func TestGetHouseNumbersAreEmpty(t *testing.T) {
 	clientMock.houseNumbers = []string{}
 
-	data := sendRequest(t, controller, "Aachener Straße")
+	data := sendGetStreetRequest(t, controller, "Aachener Straße")
 
 	dto := protocolError{}
 	err := json.Unmarshal(data, &dto)
@@ -104,8 +95,8 @@ func TestGetHouseNumbersAreEmpty(t *testing.T) {
 	}
 }
 
-func sendRequest(t *testing.T, controller Controller, streetName string) []byte {
-	request := createTestRequest(streetName)
+func sendGetStreetRequest(t *testing.T, controller Controller, streetName string) []byte {
+	request := createTestGetStreetRequest(streetName)
 	writer := httptest.NewRecorder()
 
 	controller.GetStreet(writer, request)
@@ -122,8 +113,8 @@ func sendRequest(t *testing.T, controller Controller, streetName string) []byte 
 	return data
 }
 
-func createTestRequest(streetName string) *http.Request {
-	testUrl := "http://www.mock.com/api/streets/" + url.QueryEscape(streetName)
+func createTestGetStreetRequest(streetName string) *http.Request {
+	testUrl := "http://www.mock.com/api/street/" + url.QueryEscape(streetName)
 	request := httptest.NewRequest(http.MethodGet, testUrl, nil)
 
 	// gorilla/mux add street name to vars

@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"abfallkalender_api/src/backend/client"
 	"encoding/json"
 	"net/http"
 	"net/url"
@@ -23,12 +22,11 @@ type streetDto struct {
 }
 
 // GetStreets TODO test me
-func GetStreets(w http.ResponseWriter, r *http.Request) {
-	abfallkalenderClient := client.NewClient(BaseURL)
+func (c Controller) GetStreets(w http.ResponseWriter, r *http.Request) {
 	// TODO handle error
-	redirectUrl, _ := abfallkalenderClient.GetRedirectUrl(InitialContextPath)
+	redirectUrl, _ := c.Client.GetRedirectUrl(InitialContextPath)
 	// TODO handle error
-	streets, _ := abfallkalenderClient.GetStreets(redirectUrl)
+	streets, _ := c.Client.GetStreets(redirectUrl)
 
 	var streetDtos []streetDto
 
