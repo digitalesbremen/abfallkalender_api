@@ -3,6 +3,7 @@ package handler
 import (
 	"abfallkalender_api/src/backend/client"
 	"encoding/json"
+	"fmt"
 	"github.com/gorilla/mux"
 	"net/http"
 	"net/url"
@@ -28,7 +29,19 @@ func (c Controller) GetStreet(w http.ResponseWriter, r *http.Request) {
 	streetName := parseStreetName(r)
 
 	// TODO handle error
-	redirectUrl, _ := c.Client.GetRedirectUrl(InitialContextPath)
+	redirectUrl, err := c.Client.GetRedirectUrl(InitialContextPath)
+
+	if err != nil {
+		fmt.Println(err)
+		_ = json.
+			NewEncoder(w).
+			Encode(
+				protocolError{
+					Code:    http.StatusInternalServerError,
+					Message: http.StatusText(http.StatusInternalServerError),
+				})
+		return
+	}
 	// TODO handle error
 	// TODO handle houseNumbers are empty -> 404?
 	houseNumbers, _ := c.Client.GetHouseNumbers(redirectUrl, url.QueryEscape(streetName))

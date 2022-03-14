@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/gorilla/mux"
 	"io/ioutil"
@@ -21,22 +22,10 @@ func TestHappyPath(t *testing.T) {
 
 	streetName := "Aachener Straße"
 
-	request := createTestRequest(streetName)
-	writer := httptest.NewRecorder()
-
-	controller.GetStreet(writer, request)
-
-	res := writer.Result()
-	defer res.Body.Close()
-
-	data, err := ioutil.ReadAll(res.Body)
-
-	if err != nil {
-		t.Errorf("expected error to be nil got %v", err)
-	}
+	data := sendRequest(t, controller, streetName)
 
 	dto := streetWithHouseNumbersDto{}
-	err = json.Unmarshal(data, &dto)
+	err := json.Unmarshal(data, &dto)
 
 	if err != nil {
 		t.Errorf("expected error to be nil got %v", err)
@@ -52,6 +41,48 @@ func TestHappyPath(t *testing.T) {
 	dto.verifyStreet(t, streetName)
 	dto.verifyHouseNumber(t, streetName, "2")
 	dto.verifyHouseNumber(t, streetName, "2-10")
+}
+
+func TestRedirectUrlReturnsError(t *testing.T) {
+	controller := Controller{
+		Client: &ClientMock{
+			redirectError: errors.New("cannot get redirect URL"),
+		},
+	}
+
+	data := sendRequest(t, controller, "Aachener Straße")
+
+	dto := protocolError{}
+	err := json.Unmarshal(data, &dto)
+
+	if err != nil {
+		t.Errorf("expected error to be nil got %v", err)
+	}
+
+	if dto.Code != 500 {
+		t.Errorf("expected http code to be %d got %d", 500, dto.Code)
+	}
+	if dto.Message != "Internal Server Error" {
+		t.Errorf("expected http error message to be %s got %s", "Internal Server Error", dto.Message)
+	}
+}
+
+func sendRequest(t *testing.T, controller Controller, streetName string) []byte {
+	request := createTestRequest(streetName)
+	writer := httptest.NewRecorder()
+
+	controller.GetStreet(writer, request)
+
+	res := writer.Result()
+	defer res.Body.Close()
+
+	data, err := ioutil.ReadAll(res.Body)
+
+	if err != nil {
+		t.Errorf("expected error to be nil got %v", err)
+	}
+
+	return data
 }
 
 func createTestRequest(streetName string) *http.Request {

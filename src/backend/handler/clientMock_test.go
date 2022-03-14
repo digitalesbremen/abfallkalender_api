@@ -3,11 +3,16 @@ package handler
 import "abfallkalender_api/src/backend/client"
 
 type ClientMock struct {
-	redirectURL  string
-	houseNumbers []string
+	redirectURL   string
+	redirectError error
+	houseNumbers  []string
 }
 
 func (mt *ClientMock) GetRedirectUrl(_ string) (string, error) {
+	if mt.redirectError != nil {
+		return "", mt.redirectError
+	}
+
 	return mt.redirectURL, nil
 }
 
