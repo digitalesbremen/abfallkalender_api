@@ -13,6 +13,11 @@ import (
 )
 
 func TestGetStreetHappyPath(t *testing.T) {
+	controller.Client = &ClientMock{
+		redirectURL:  "www.mock.com/redirect",
+		houseNumbers: []string{"2", "2-10"},
+	}
+
 	streetName := "Aachener Straße"
 
 	data := sendGetStreetRequest(t, controller, streetName)
@@ -36,7 +41,9 @@ func TestGetStreetHappyPath(t *testing.T) {
 }
 
 func TestRedirectUrlReturnsError(t *testing.T) {
-	clientMock.redirectError = errors.New("cannot get redirect URL")
+	controller.Client = &ClientMock{
+		redirectError: errors.New("cannot get redirect URL"),
+	}
 
 	data := sendGetStreetRequest(t, controller, "Aachener Straße")
 
@@ -55,7 +62,10 @@ func TestRedirectUrlReturnsError(t *testing.T) {
 }
 
 func TestGetHouseNumbersReturnsError(t *testing.T) {
-	clientMock.getHouseNumbersError = errors.New("cannot get house numbers")
+	controller.Client = &ClientMock{
+		redirectURL:          "www.mock.com/redirect",
+		getHouseNumbersError: errors.New("cannot get house numbers"),
+	}
 
 	data := sendGetStreetRequest(t, controller, "Aachener Straße")
 
@@ -74,7 +84,10 @@ func TestGetHouseNumbersReturnsError(t *testing.T) {
 }
 
 func TestGetHouseNumbersAreEmpty(t *testing.T) {
-	clientMock.houseNumbers = []string{}
+	controller.Client = &ClientMock{
+		redirectURL:  "www.mock.com/redirect",
+		houseNumbers: []string{},
+	}
 
 	data := sendGetStreetRequest(t, controller, "Aachener Straße")
 

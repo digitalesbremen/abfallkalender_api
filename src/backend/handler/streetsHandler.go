@@ -6,21 +6,6 @@ import (
 	"net/url"
 )
 
-type streetsDto struct {
-	Embedded struct {
-		Streets []streetDto `json:"streets"`
-	} `json:"_embedded"`
-}
-
-type streetDto struct {
-	Name  string `json:"name"`
-	Links struct {
-		Self struct {
-			Href string `json:"href"`
-		} `json:"self"`
-	} `json:"_links"`
-}
-
 // GetStreets TODO test me
 func (c Controller) GetStreets(w http.ResponseWriter, r *http.Request) {
 	// TODO handle error
@@ -51,4 +36,19 @@ func (c Controller) GetStreets(w http.ResponseWriter, r *http.Request) {
 func buildStreetUrl(r *http.Request, streetName string) string {
 	// TODO use fmt.printf
 	return "https://" + r.Host + "/api/street/" + url.QueryEscape(streetName)
+}
+
+type streetsDto struct {
+	Embedded struct {
+		Streets []streetDto `json:"streets"`
+	} `json:"_embedded"`
+}
+
+type streetDto struct {
+	Name  string `json:"name"`
+	Links struct {
+		Self struct {
+			Href string `json:"href"`
+		} `json:"self"`
+	} `json:"_links"`
 }

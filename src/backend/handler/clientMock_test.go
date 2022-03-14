@@ -5,19 +5,15 @@ import "abfallkalender_api/src/backend/client"
 type ClientMock struct {
 	redirectURL          string
 	redirectError        error
+	streets              []string
+	getStreetsError      error
 	houseNumbers         []string
 	getHouseNumbersError error
 }
 
-var clientMock = &ClientMock{
-	redirectURL:  "www.mock.com/redirect",
-	houseNumbers: []string{"2", "2-10"},
-}
+var controller = Controller{}
 
-var controller = Controller{
-	Client: clientMock,
-}
-
+// TODO validate parameter
 func (mt *ClientMock) GetRedirectUrl(_ string) (string, error) {
 	if mt.redirectError != nil {
 		return "", mt.redirectError
@@ -26,6 +22,22 @@ func (mt *ClientMock) GetRedirectUrl(_ string) (string, error) {
 	return mt.redirectURL, nil
 }
 
+// TODO validate parameters
+func (mt *ClientMock) GetStreets(_ string) (response client.Streets, err error) {
+	if mt.getStreetsError != nil {
+		return nil, mt.getStreetsError
+	}
+
+	streets := client.Streets{}
+
+	for _, street := range mt.streets {
+		streets = append(streets, street)
+	}
+
+	return streets, nil
+}
+
+// TODO validate parameters
 func (mt *ClientMock) GetHouseNumbers(_ string, _ string) (client.HouseNumbers, error) {
 	if mt.getHouseNumbersError != nil {
 		return nil, mt.getHouseNumbersError
@@ -38,8 +50,4 @@ func (mt *ClientMock) GetHouseNumbers(_ string, _ string) (client.HouseNumbers, 
 	}
 
 	return numbers, nil
-}
-
-func (mt *ClientMock) GetStreets(redirectUrl string) (response client.Streets, err error) {
-	return nil, nil
 }
