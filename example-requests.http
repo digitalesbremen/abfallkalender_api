@@ -38,7 +38,18 @@ POST {{redirect_url}}/abfallkalender
 Content-Type: application/json
 
 {
-  "ort": "Bremen",
   "strasse": "Aachener Straße",
   "hausnr": "22"
 }
+
+###
+# ICAL Download
+GET {{redirect_url}}/abfallkalender/cal?strasse=Aachener+Straße&Hausnr=22
+
+###
+# PDF Download
+GET {{redirect_url}}/abfallkalender/pdf?strasse=Aachener+Straße&Hausnr=22
+
+###
+# CSV Download
+GET {{redirect_url}}/abfallkalender/csv?strasse=Aachener+Straße&Hausnr=22
