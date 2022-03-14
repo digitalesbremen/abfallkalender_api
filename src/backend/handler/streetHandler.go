@@ -28,23 +28,20 @@ func NewController() Controller {
 func (c Controller) GetStreet(w http.ResponseWriter, r *http.Request) {
 	streetName := parseStreetName(r)
 
-	// TODO handle error
 	redirectUrl, err := c.Client.GetRedirectUrl(InitialContextPath)
 
 	if err != nil {
-		fmt.Println(err)
-		_ = json.
-			NewEncoder(w).
-			Encode(
-				protocolError{
-					Code:    http.StatusInternalServerError,
-					Message: http.StatusText(http.StatusInternalServerError),
-				})
+		c.createInternalServerError(w, err)
 		return
 	}
-	// TODO handle error
+
 	// TODO handle houseNumbers are empty -> 404?
-	houseNumbers, _ := c.Client.GetHouseNumbers(redirectUrl, url.QueryEscape(streetName))
+	houseNumbers, err := c.Client.GetHouseNumbers(redirectUrl, url.QueryEscape(streetName))
+
+	if err != nil {
+		c.createInternalServerError(w, err)
+		return
+	}
 
 	var numbers []houseNumberDto
 
@@ -68,6 +65,17 @@ func (c Controller) GetStreet(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("content-type", "application/json; charset=utf-8")
 	_, _ = w.Write(dto)
+}
+
+func (c Controller) createInternalServerError(w http.ResponseWriter, err error) {
+	fmt.Println(err)
+	_ = json.
+		NewEncoder(w).
+		Encode(
+			protocolError{
+				Code:    http.StatusInternalServerError,
+				Message: http.StatusText(http.StatusInternalServerError),
+			})
 }
 
 type streetWithHouseNumbersDto struct {

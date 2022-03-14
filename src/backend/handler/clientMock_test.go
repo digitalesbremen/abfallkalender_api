@@ -3,9 +3,10 @@ package handler
 import "abfallkalender_api/src/backend/client"
 
 type ClientMock struct {
-	redirectURL   string
-	redirectError error
-	houseNumbers  []string
+	redirectURL          string
+	redirectError        error
+	houseNumbers         []string
+	getHouseNumbersError error
 }
 
 func (mt *ClientMock) GetRedirectUrl(_ string) (string, error) {
@@ -17,6 +18,10 @@ func (mt *ClientMock) GetRedirectUrl(_ string) (string, error) {
 }
 
 func (mt *ClientMock) GetHouseNumbers(_ string, _ string) (client.HouseNumbers, error) {
+	if mt.getHouseNumbersError != nil {
+		return nil, mt.getHouseNumbersError
+	}
+
 	numbers := client.HouseNumbers{}
 
 	for _, number := range mt.houseNumbers {

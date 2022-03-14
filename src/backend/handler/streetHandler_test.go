@@ -12,14 +12,16 @@ import (
 	"testing"
 )
 
-func TestHappyPath(t *testing.T) {
-	controller := Controller{
-		Client: &ClientMock{
-			redirectURL:  "www.mock.com/redirect",
-			houseNumbers: []string{"2", "2-10"},
-		},
-	}
+var clientMock = &ClientMock{
+	redirectURL:  "www.mock.com/redirect",
+	houseNumbers: []string{"2", "2-10"},
+}
 
+var controller = Controller{
+	Client: clientMock,
+}
+
+func TestHappyPath(t *testing.T) {
 	streetName := "Aachener Straße"
 
 	data := sendRequest(t, controller, streetName)
@@ -30,7 +32,6 @@ func TestHappyPath(t *testing.T) {
 	if err != nil {
 		t.Errorf("expected error to be nil got %v", err)
 	}
-
 	if dto.Name != streetName {
 		t.Errorf("expected street %s got %s", streetName, dto.Name)
 	}
@@ -44,11 +45,7 @@ func TestHappyPath(t *testing.T) {
 }
 
 func TestRedirectUrlReturnsError(t *testing.T) {
-	controller := Controller{
-		Client: &ClientMock{
-			redirectError: errors.New("cannot get redirect URL"),
-		},
-	}
+	clientMock.redirectError = errors.New("cannot get redirect URL")
 
 	data := sendRequest(t, controller, "Aachener Straße")
 
@@ -58,7 +55,25 @@ func TestRedirectUrlReturnsError(t *testing.T) {
 	if err != nil {
 		t.Errorf("expected error to be nil got %v", err)
 	}
+	if dto.Code != 500 {
+		t.Errorf("expected http code to be %d got %d", 500, dto.Code)
+	}
+	if dto.Message != "Internal Server Error" {
+		t.Errorf("expected http error message to be %s got %s", "Internal Server Error", dto.Message)
+	}
+}
 
+func TestGetHouseNumbersReturnsError(t *testing.T) {
+	clientMock.getHouseNumbersError = errors.New("cannot get house numbers")
+
+	data := sendRequest(t, controller, "Aachener Straße")
+
+	dto := protocolError{}
+	err := json.Unmarshal(data, &dto)
+
+	if err != nil {
+		t.Errorf("expected error to be nil got %v", err)
+	}
 	if dto.Code != 500 {
 		t.Errorf("expected http code to be %d got %d", 500, dto.Code)
 	}
