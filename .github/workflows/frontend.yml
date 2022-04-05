@@ -29,5 +29,9 @@ jobs:
         with:
           node-version: '17'
 
-      - name: build frontend
-        run: npm run build
+      - uses: actions/setup-python@v3
+        with:
+          python-version: '3.x'
+          architecture: 'x64'
+
+      - run: npm run build
