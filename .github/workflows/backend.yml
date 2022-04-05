@@ -33,6 +33,9 @@ jobs:
       - name: Get dependencies
         run: go mod download
 
+      - name: Create kalender.js mock
+        run: touch dist/kalender.js
+
       - name: Test
         run: go test -v ./...
 
