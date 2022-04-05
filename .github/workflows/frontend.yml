@@ -29,10 +29,10 @@ jobs:
         with:
           node-version: '17'
 
-      - uses: actions/setup-python@v3
-        with:
-          python-version: '3.x'
-          architecture: 'x64'
+      #- uses: actions/setup-python@v3
+      #  with:
+      #    python-version: '3.x'
+      #    architecture: 'x64'
 
-      - run: npm install
+      - run: npm ci
       - run: npm run build
