@@ -1,0 +1,33 @@
+name: Build frontend
+
+on:
+  push:
+    branches:
+      - 'main'
+      - 'feature/**'
+  pull_request:
+    paths:
+      - 'main'
+
+env:
+  IMAGE_NAME: larmic/abfallkalender_api
+
+jobs:
+
+  build:
+    name: Build frontend
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v2
+
+      - name: Set up version
+        run: echo "VERSION=$(cat VERSION)" >> $GITHUB_ENV
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '17'
+
+      - name: build frontend
+        run: npm run build
