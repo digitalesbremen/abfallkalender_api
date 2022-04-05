@@ -3,11 +3,15 @@ package client
 import (
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 )
 
 func (c *Client) GetICS(redirectUrl string, streetName string, houseNumber string) (response string, err error) {
-	request, err := http.NewRequest("GET", buildICSUrl(redirectUrl, streetName, houseNumber), nil)
+	url := buildICSUrl(redirectUrl, streetName, houseNumber)
+	request, err := http.NewRequest("GET", url, nil)
+
+	log.Printf("Call URL '%s'\n", url)
 
 	// TODO make it cleaner! command - if err - command - if err - command if err?
 	if err != nil {

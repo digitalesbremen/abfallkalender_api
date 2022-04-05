@@ -13,6 +13,7 @@ func (c Controller) GetCalendar(w http.ResponseWriter, r *http.Request) {
 	redirectUrl, err := c.Client.GetRedirectUrl(InitialContextPath)
 
 	if err != nil {
+		// TODO handle 404
 		c.createInternalServerError(w, err)
 		return
 	}
