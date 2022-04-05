@@ -1,4 +1,4 @@
-name: Build frontend
+name: Build backend
 
 on:
   push:
@@ -15,19 +15,26 @@ env:
 jobs:
 
   build:
-    name: Build frontend
+    name: Build backend
     runs-on: ubuntu-latest
 
     steps:
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: ^1.18
+
       - name: Check out code into the Go module directory
         uses: actions/checkout@v2
 
       - name: Set up version
         run: echo "VERSION=$(cat VERSION)" >> $GITHUB_ENV
 
-      - uses: actions/setup-node@v3
-        with:
-          node-version: '17'
+      - name: Get dependencies
+        run: go mod download
 
-      - run: npm ci
-      - run: npm run build
+      - name: Test
+        run: go test -v ./...
+
+      - name: Build
+        run: CGO_ENABLED=0 GOOS=linux go build -v ./...
