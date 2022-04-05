@@ -14,7 +14,7 @@ import (
 func TestGetCalendarHappyPath(t *testing.T) {
 	controller.Client = &ClientMock{
 		redirectURL: "www.mock.com/redirect",
-		ical:        "some-ical-demo",
+		ics:         "some-ics-demo",
 	}
 
 	streetName := "Aachener Straße"
@@ -22,8 +22,8 @@ func TestGetCalendarHappyPath(t *testing.T) {
 
 	data := sendGetCalendarRequest(t, controller, streetName, houseNumber)
 
-	if string(data) != "some-ical-demo" {
-		t.Errorf("expected response to be %s got %s", "some-ical-demo", string(data))
+	if string(data) != "some-ics-demo" {
+		t.Errorf("expected response to be %s got %s", "some-ics-demo", string(data))
 	}
 }
 
@@ -51,7 +51,7 @@ func TestGetCalendarRedirectUrlReturnsError(t *testing.T) {
 func TestGetCalendarGetICSReturnsError(t *testing.T) {
 	controller.Client = &ClientMock{
 		redirectURL: "www.mock.com/redirect",
-		getICal:     errors.New("cannot get ICS"),
+		getICSError: errors.New("cannot get ICS"),
 	}
 
 	data := sendGetCalendarRequest(t, controller, "Aachener Straße", "22")
