@@ -14,7 +14,8 @@ const (
 	RedirectUrlHeader       = "/bremenabfallkalender/(S(nni))/Abfallkalender"
 	streetsContextPath      = "/bremenabfallkalender/(S(nni))/Data/Strassen"
 	houseNumbersContextPath = "/bremenabfallkalender/(S(nni))/Data/Hausnummern?strasse=Aachener+Stra%C3%9Fe"
-	icalContextPath         = "/bremenabfallkalender/(S(nni))/Abfallkalender/cal?strasse=Aachener+Stra%C3%9Fe&Hausnr=22"
+	icsContextPath          = "/bremenabfallkalender/(S(nni))/Abfallkalender/cal?strasse=Aachener+Stra%C3%9Fe&Hausnr=22"
+	csvContextPath          = "/bremenabfallkalender/(S(nni))/Abfallkalender/csv?strasse=Aachener+Stra%C3%9Fe&Hausnr=22"
 	streetsResponse         = "[\"\",\n\"Aachener Straße\",\"Lars-Krüger-Hof\",\"Martinsweg (KG Gartenstadt Vahr)\",\n\"Züricher Straße\"]"
 	houseNumbersResponse    = "[\"\",\n\"0\",\"2\",\"2-10\",\n\"3\"]"
 )
@@ -38,8 +39,11 @@ func startAbfallkalenderServer(t *testing.T) AbfallkalenderServer {
 		case houseNumbersContextPath:
 			doGetHouseNumbers(t, rw, req)
 			break
-		case icalContextPath:
-			doGetICal(t, rw, req)
+		case icsContextPath:
+			doGetICS(t, rw, req)
+			break
+		case csvContextPath:
+			doGetCSV(t, rw, req)
 			break
 		case RedirectUrlContextPath:
 			doGetServerRedirectUrl(t, rw, req)
@@ -71,13 +75,22 @@ func doGetHouseNumbers(t *testing.T, rw http.ResponseWriter, req *http.Request) 
 	_, _ = rw.Write([]byte(houseNumbersResponse))
 }
 
-func doGetICal(t *testing.T, rw http.ResponseWriter, req *http.Request) {
+func doGetICS(t *testing.T, rw http.ResponseWriter, req *http.Request) {
 	if req.Method != "GET" {
-		_ = fmt.Sprintf("%s %s, want: GET", req.Method, icalContextPath)
+		_ = fmt.Sprintf("%s %s, want: GET", req.Method, icsContextPath)
 		t.FailNow()
 	}
-	icalResponse, _ := ioutil.ReadFile("test_ical_response.txt")
-	_, _ = rw.Write(icalResponse)
+	response, _ := ioutil.ReadFile("test_ics_response.txt")
+	_, _ = rw.Write(response)
+}
+
+func doGetCSV(t *testing.T, rw http.ResponseWriter, req *http.Request) {
+	if req.Method != "GET" {
+		_ = fmt.Sprintf("%s %s, want: GET", req.Method, csvContextPath)
+		t.FailNow()
+	}
+	response, _ := ioutil.ReadFile("test_csv_response.txt")
+	_, _ = rw.Write(response)
 }
 
 func doGetServerRedirectUrl(t *testing.T, rw http.ResponseWriter, req *http.Request) {

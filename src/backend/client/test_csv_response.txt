@@ -1,0 +1,2 @@
+"Wochentag";"Datum";"Abfuhrart"
+"Montag";"03.01.2022";"Bioabfall"
