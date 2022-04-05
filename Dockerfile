@@ -29,7 +29,7 @@ RUN npm run build
 
 
 # Step 2: create multi stage backend builder (about 800 MB)
-FROM golang:1.17 AS builder
+FROM golang:1.18 AS builder
 LABEL stage=intermediate
 RUN go version
 

@@ -2,6 +2,7 @@ package client
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -13,6 +14,7 @@ const (
 	RedirectUrlHeader       = "/bremenabfallkalender/(S(nni))/Abfallkalender"
 	streetsContextPath      = "/bremenabfallkalender/(S(nni))/Data/Strassen"
 	houseNumbersContextPath = "/bremenabfallkalender/(S(nni))/Data/Hausnummern?strasse=Aachener+Stra%C3%9Fe"
+	icalContextPath         = "/bremenabfallkalender/(S(nni))/Abfallkalender/cal?strasse=Aachener+Stra%C3%9Fe&Hausnr=22"
 	streetsResponse         = "[\"\",\n\"Aachener Straße\",\"Lars-Krüger-Hof\",\"Martinsweg (KG Gartenstadt Vahr)\",\n\"Züricher Straße\"]"
 	houseNumbersResponse    = "[\"\",\n\"0\",\"2\",\"2-10\",\n\"3\"]"
 )
@@ -35,6 +37,9 @@ func startAbfallkalenderServer(t *testing.T) AbfallkalenderServer {
 			break
 		case houseNumbersContextPath:
 			doGetHouseNumbers(t, rw, req)
+			break
+		case icalContextPath:
+			doGetICal(t, rw, req)
 			break
 		case RedirectUrlContextPath:
 			doGetServerRedirectUrl(t, rw, req)
@@ -64,6 +69,15 @@ func doGetHouseNumbers(t *testing.T, rw http.ResponseWriter, req *http.Request) 
 	}
 
 	_, _ = rw.Write([]byte(houseNumbersResponse))
+}
+
+func doGetICal(t *testing.T, rw http.ResponseWriter, req *http.Request) {
+	if req.Method != "GET" {
+		_ = fmt.Sprintf("%s %s, want: GET", req.Method, icalContextPath)
+		t.FailNow()
+	}
+	icalResponse, _ := ioutil.ReadFile("test_ical_response.txt")
+	_, _ = rw.Write(icalResponse)
 }
 
 func doGetServerRedirectUrl(t *testing.T, rw http.ResponseWriter, req *http.Request) {

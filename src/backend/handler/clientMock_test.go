@@ -9,6 +9,8 @@ type ClientMock struct {
 	getStreetsError      error
 	houseNumbers         []string
 	getHouseNumbersError error
+	getICSError          error
+	ics                  []byte
 }
 
 var controller = Controller{}
@@ -50,4 +52,13 @@ func (mt *ClientMock) GetHouseNumbers(_ string, _ string) (client.HouseNumbers, 
 	}
 
 	return numbers, nil
+}
+
+// TODO validate parameters
+func (mt *ClientMock) GetICS(_ string, _ string, _ string) ([]byte, error) {
+	if mt.getICSError != nil {
+		return nil, mt.getICSError
+	}
+
+	return mt.ics, nil
 }

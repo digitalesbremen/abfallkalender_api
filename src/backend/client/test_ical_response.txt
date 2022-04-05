@@ -1,0 +1,26 @@
+BEGIN:VCALENDAR
+METHOD:PUBLISH
+PRODID:-//www.die-bremer-stadtreinigung.de//NONSGML c-ware 1.0//
+VERSION:2.0
+X-WR-CALNAME:Abfuhrdaten Bremer Stadtreinigung
+X-WR-CALDESC:Abfuhrtermine Bremen / 2022-2024 für \, Aachener Straße
+X-WR-TIMEZONE:Europe/Berlin
+BEGIN:VEVENT
+UID:20220103T000000CET-122625@die-bremer-stadtreinigung.de
+DTSTAMP:20220103T000000Z
+CATEGORIES:Abfuhrtermine
+DESCRIPTION:Bitte stellen Sie Ihre Abfälle bis 6.00 Uhr an die Straße. Ach
+ ten Sie darauf\, dass Ihre Bio-\, Rest- und Altpapiertonne auf der für die
+  Leerung festgelegten Straßenseite stehen\, und zwar mit der Deckelöffnung
+  zur Straße\, maximal zwei Meter vom Fahrbahnrand entfernt.
+DTSTART;VALUE=DATE-TIME:20220103T060000
+DTEND;VALUE=DATE-TIME:20220103T063000
+LOCATION:Bremen\,Aachener Straße 22
+SUMMARY:Abfuhr: Bioabfall
+BEGIN:VALARM
+TRIGGER:-P0DT12H0M0S
+ACTION:DISPLAY
+DESCRIPTION:Reminder
+END:VALARM
+END:VEVENT
+END:VCALENDAR

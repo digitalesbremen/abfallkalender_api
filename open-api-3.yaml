@@ -51,6 +51,16 @@ paths:
             application/hal+json:
               schema:
                 $href: '#/components/schemas/_embedded'
+  /api/street/{streetName}/number/{number}:
+    get:
+      summary: Get ics file of specific address
+      responses:
+        '200':
+          description: an ics file of specific address
+          content:
+            text/calendar:
+              schema:
+                type: string
   /kalender.js:
     get:
       summary: Get kalender web component

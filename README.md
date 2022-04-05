@@ -5,6 +5,8 @@
 
 This project is still alpha an in development. 
 
+You will find a MVP here: https://bremer-abfallkalender-api.herokuapp.com/
+
 ![Idea](misc/images/idea.png)
 
 ```shell

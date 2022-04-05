@@ -15,6 +15,7 @@ type ClientCaller interface {
 	GetRedirectUrl(url string) (string, error)
 	GetHouseNumbers(url string, streetName string) (client.HouseNumbers, error)
 	GetStreets(redirectUrl string) (response client.Streets, err error)
+	GetICS(redirectUrl string, streetName string, houseNumber string) (response []byte, err error)
 }
 
 type Controller struct {

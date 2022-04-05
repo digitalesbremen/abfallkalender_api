@@ -40,6 +40,12 @@ var routes = Routes{
 		HandlerFunc: handler.NewController().GetStreet,
 	},
 	Route{
+		Name:        "ICS",
+		Method:      "GET",
+		Pattern:     "/api/street/{street}/number/{number}",
+		HandlerFunc: handler.NewController().GetCalendar,
+	},
+	Route{
 		Name:        "Kalender web component",
 		Method:      "GET",
 		Pattern:     "/kalender.js",

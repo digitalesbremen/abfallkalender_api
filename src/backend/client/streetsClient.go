@@ -4,13 +4,17 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 )
 
 type Streets []string
 
 func (c *Client) GetStreets(redirectUrl string) (response Streets, err error) {
-	request, err := http.NewRequest("GET", fmt.Sprintf("%s%s", redirectUrl, "/Data/Strassen"), nil)
+	url := fmt.Sprintf("%s%s", redirectUrl, "/Data/Strassen")
+	request, err := http.NewRequest("GET", url, nil)
+
+	log.Printf("Call URL '%s'\n", url)
 
 	// TODO make it cleaner! command - if err - command - if err - command if err?
 	if err != nil {
