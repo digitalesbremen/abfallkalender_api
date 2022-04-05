@@ -13,7 +13,7 @@ const (
 	RedirectUrlHeader       = "/bremenabfallkalender/(S(nni))/Abfallkalender"
 	streetsContextPath      = "/bremenabfallkalender/(S(nni))/Data/Strassen"
 	houseNumbersContextPath = "/bremenabfallkalender/(S(nni))/Data/Hausnummern?strasse=Aachener+Stra%C3%9Fe"
-	icalContextPath         = "/bremenabfallkalender/(S(nni))/abfallkalender/csv?strasse=Aachener+Stra%C3%9Fe&Hausnr=22"
+	icalContextPath         = "/bremenabfallkalender/(S(nni))/Abfallkalender/cal?strasse=Aachener+Stra%C3%9Fe&Hausnr=22"
 	streetsResponse         = "[\"\",\n\"Aachener Straße\",\"Lars-Krüger-Hof\",\"Martinsweg (KG Gartenstadt Vahr)\",\n\"Züricher Straße\"]"
 	houseNumbersResponse    = "[\"\",\n\"0\",\"2\",\"2-10\",\n\"3\"]"
 	icalResponse            = `BEGIN:VCALENDAR
