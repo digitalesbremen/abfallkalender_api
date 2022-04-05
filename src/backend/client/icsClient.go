@@ -38,5 +38,5 @@ func (c *Client) GetICS(redirectUrl string, streetName string, houseNumber strin
 }
 
 func buildICSUrl(redirectUrl string, streetName string, houseNumber string) string {
-	return fmt.Sprintf("%s%s%s%s%s", redirectUrl, "/cal?strasse=", streetName, "&Hausnr=", houseNumber)
+	return fmt.Sprintf("%s%s%s%s%s", redirectUrl, "/Abfallkalender/cal?strasse=", streetName, "&Hausnr=", houseNumber)
 }
