@@ -18,7 +18,7 @@ func TestGetICal(t *testing.T) {
 
 	icalResponse, _ := ioutil.ReadFile("test_ical_response.txt")
 
-	if ical != string(icalResponse) {
+	if string(ical) != string(icalResponse) {
 		t.Fatalf(`GetICS(%s) should equal %s`, server.BaseUrl, string(icalResponse))
 	}
 }

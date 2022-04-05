@@ -14,7 +14,7 @@ import (
 func TestGetCalendarHappyPath(t *testing.T) {
 	controller.Client = &ClientMock{
 		redirectURL: "www.mock.com/redirect",
-		ics:         "some-ics-demo",
+		ics:         ([]byte)("some-ics-demo"),
 	}
 
 	streetName := "Aachener Straße"

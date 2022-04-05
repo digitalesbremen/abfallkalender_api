@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-func (c *Client) GetICS(redirectUrl string, streetName string, houseNumber string) (response string, err error) {
+func (c *Client) GetICS(redirectUrl string, streetName string, houseNumber string) (response []byte, err error) {
 	url := buildICSUrl(redirectUrl, streetName, houseNumber)
 	request, err := http.NewRequest("GET", url, nil)
 
@@ -15,13 +15,13 @@ func (c *Client) GetICS(redirectUrl string, streetName string, houseNumber strin
 
 	// TODO make it cleaner! command - if err - command - if err - command if err?
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	resp, err := c.sendRequest(request, false)
 
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	ical, err := io.ReadAll(resp.Body)
@@ -31,10 +31,10 @@ func (c *Client) GetICS(redirectUrl string, streetName string, houseNumber strin
 	}(resp.Body)
 
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return string(ical), nil
+	return ical, nil
 }
 
 func buildICSUrl(redirectUrl string, streetName string, houseNumber string) string {

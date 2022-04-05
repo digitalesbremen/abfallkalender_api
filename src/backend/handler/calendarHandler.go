@@ -29,7 +29,7 @@ func (c Controller) GetCalendar(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("content-type", "text/calendar; charset=utf-8")
-	_, _ = w.Write(([]byte)(ical))
+	_, _ = w.Write(ical)
 }
 
 func parseHouseNumber(r *http.Request) string {
