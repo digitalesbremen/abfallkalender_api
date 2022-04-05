@@ -13,11 +13,11 @@ func TestGetICal(t *testing.T) {
 	// TODO duplicate
 	baseUrl := server.BaseUrl + RedirectUrlHeader
 
-	ical, _ := NewClient(server.BaseUrl).GetICal(baseUrl, "Aachener+Stra%C3%9Fe", "22")
+	ical, _ := NewClient(server.BaseUrl).GetICS(baseUrl, "Aachener+Stra%C3%9Fe", "22")
 
 	icalResponse, _ := ioutil.ReadFile("test_ical_response.txt")
 
 	if ical != string(icalResponse) {
-		t.Fatalf(`GetICal(%s) should equal %s`, server.BaseUrl, string(icalResponse))
+		t.Fatalf(`GetICS(%s) should equal %s`, server.BaseUrl, string(icalResponse))
 	}
 }

@@ -6,8 +6,8 @@ import (
 	"net/http"
 )
 
-func (c *Client) GetICal(redirectUrl string, streetName string, houseNumber string) (response string, err error) {
-	request, err := http.NewRequest("GET", buildICalUrl(redirectUrl, streetName, houseNumber), nil)
+func (c *Client) GetICS(redirectUrl string, streetName string, houseNumber string) (response string, err error) {
+	request, err := http.NewRequest("GET", buildICSUrl(redirectUrl, streetName, houseNumber), nil)
 
 	// TODO make it cleaner! command - if err - command - if err - command if err?
 	if err != nil {
@@ -33,6 +33,6 @@ func (c *Client) GetICal(redirectUrl string, streetName string, houseNumber stri
 	return string(ical), nil
 }
 
-func buildICalUrl(redirectUrl string, streetName string, houseNumber string) string {
+func buildICSUrl(redirectUrl string, streetName string, houseNumber string) string {
 	return fmt.Sprintf("%s%s%s%s%s", redirectUrl, "/cal?strasse=", streetName, "&Hausnr=", houseNumber)
 }

@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"encoding/json"
+	"errors"
 	"github.com/gorilla/mux"
 	"io/ioutil"
 	"net/http"
@@ -22,6 +24,49 @@ func TestGetCalendarHappyPath(t *testing.T) {
 
 	if string(data) != "some-ical-demo" {
 		t.Errorf("expected response to be %s got %s", "some-ical-demo", string(data))
+	}
+}
+
+func TestGetCalendarRedirectUrlReturnsError(t *testing.T) {
+	controller.Client = &ClientMock{
+		redirectError: errors.New("cannot get redirect URL"),
+	}
+
+	data := sendGetCalendarRequest(t, controller, "Aachener Straße", "22")
+
+	dto := protocolError{}
+	err := json.Unmarshal(data, &dto)
+
+	if err != nil {
+		t.Errorf("expected error to be nil got %v", err)
+	}
+	if dto.Code != 500 {
+		t.Errorf("expected http code to be %d got %d", 500, dto.Code)
+	}
+	if dto.Message != "Internal Server Error" {
+		t.Errorf("expected http error message to be %s got %s", "Internal Server Error", dto.Message)
+	}
+}
+
+func TestGetCalendarGetICSReturnsError(t *testing.T) {
+	controller.Client = &ClientMock{
+		redirectURL: "www.mock.com/redirect",
+		getICal:     errors.New("cannot get ICS"),
+	}
+
+	data := sendGetCalendarRequest(t, controller, "Aachener Straße", "22")
+
+	dto := protocolError{}
+	err := json.Unmarshal(data, &dto)
+
+	if err != nil {
+		t.Errorf("expected error to be nil got %v", err)
+	}
+	if dto.Code != 500 {
+		t.Errorf("expected http code to be %d got %d", 500, dto.Code)
+	}
+	if dto.Message != "Internal Server Error" {
+		t.Errorf("expected http error message to be %s got %s", "Internal Server Error", dto.Message)
 	}
 }
 

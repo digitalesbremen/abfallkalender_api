@@ -19,7 +19,7 @@ func (c Controller) GetCalendar(w http.ResponseWriter, r *http.Request) {
 
 	// TODO check different media types (ics, csv, pdf, html)
 
-	ical, err := c.Client.GetICal(redirectUrl, url.QueryEscape(streetName), houseNumber)
+	ical, err := c.Client.GetICS(redirectUrl, url.QueryEscape(streetName), houseNumber)
 
 	if err != nil {
 		c.createInternalServerError(w, err)

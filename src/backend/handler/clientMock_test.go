@@ -55,7 +55,7 @@ func (mt *ClientMock) GetHouseNumbers(_ string, _ string) (client.HouseNumbers, 
 }
 
 // TODO validate parameters
-func (mt *ClientMock) GetICal(_ string, _ string, _ string) (string, error) {
+func (mt *ClientMock) GetICS(_ string, _ string, _ string) (string, error) {
 	if mt.getICal != nil {
 		return "", mt.getICal
 	}
