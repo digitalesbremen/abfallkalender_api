@@ -5,6 +5,10 @@ VERSION_FILE=VERSION
 VERSION=`cat $(VERSION_FILE)`
 IMAGE_TAG=${VERSION}
 
+go-test:
+	@echo "Running go tests"
+	go test -v ./...
+
 docker-build:
 	@echo "Remove docker image if already exists"
 	docker rmi -f ${IMAGE_NAME}:${IMAGE_TAG}

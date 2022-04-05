@@ -1,6 +1,7 @@
 package client
 
 import (
+	"io/ioutil"
 	"testing"
 )
 
@@ -14,7 +15,9 @@ func TestGetICal(t *testing.T) {
 
 	ical, _ := NewClient(server.BaseUrl).GetICal(baseUrl, "Aachener+Stra%C3%9Fe", "22")
 
-	if ical != icalResponse {
-		t.Fatalf(`GetICal(%s) should equal %s`, server.BaseUrl, icalResponse)
+	icalResponse, _ := ioutil.ReadFile("test_ical_response.txt")
+
+	if ical != string(icalResponse) {
+		t.Fatalf(`GetICal(%s) should equal %s`, server.BaseUrl, string(icalResponse))
 	}
 }

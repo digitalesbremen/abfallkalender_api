@@ -2,6 +2,7 @@ package client
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -16,33 +17,6 @@ const (
 	icalContextPath         = "/bremenabfallkalender/(S(nni))/Abfallkalender/cal?strasse=Aachener+Stra%C3%9Fe&Hausnr=22"
 	streetsResponse         = "[\"\",\n\"Aachener Straße\",\"Lars-Krüger-Hof\",\"Martinsweg (KG Gartenstadt Vahr)\",\n\"Züricher Straße\"]"
 	houseNumbersResponse    = "[\"\",\n\"0\",\"2\",\"2-10\",\n\"3\"]"
-	icalResponse            = `BEGIN:VCALENDAR
-METHOD:PUBLISH
-PRODID:-//www.die-bremer-stadtreinigung.de//NONSGML c-ware 1.0//
-VERSION:2.0
-X-WR-CALNAME:Abfuhrdaten Bremer Stadtreinigung
-X-WR-CALDESC:Abfuhrtermine Bremen / 2022-2024 für \, Aachener Straße
-X-WR-TIMEZONE:Europe/Berlin
-BEGIN:VEVENT
-UID:20220103T000000CET-122625@die-bremer-stadtreinigung.de
-DTSTAMP:20220103T000000Z
-CATEGORIES:Abfuhrtermine
-DESCRIPTION:Bitte stellen Sie Ihre Abfälle bis 6.00 Uhr an die Straße. Ach
- ten Sie darauf\, dass Ihre Bio-\, Rest- und Altpapiertonne auf der für die
-  Leerung festgelegten Straßenseite stehen\, und zwar mit der Deckelöffnung
-  zur Straße\, maximal zwei Meter vom Fahrbahnrand entfernt.
-DTSTART;VALUE=DATE-TIME:20220103T060000
-DTEND;VALUE=DATE-TIME:20220103T063000
-LOCATION:Bremen\,Aachener Straße 22
-SUMMARY:Abfuhr: Bioabfall
-BEGIN:VALARM
-TRIGGER:-P0DT12H0M0S
-ACTION:DISPLAY
-DESCRIPTION:Reminder
-END:VALARM
-END:VEVENT
-END:VCALENDAR
-`
 )
 
 type AbfallkalenderServer struct {
@@ -102,8 +76,8 @@ func doGetICal(t *testing.T, rw http.ResponseWriter, req *http.Request) {
 		_ = fmt.Sprintf("%s %s, want: GET", req.Method, icalContextPath)
 		t.FailNow()
 	}
-
-	_, _ = rw.Write([]byte(icalResponse))
+	icalResponse, _ := ioutil.ReadFile("test_ical_response.txt")
+	_, _ = rw.Write(icalResponse)
 }
 
 func doGetServerRedirectUrl(t *testing.T, rw http.ResponseWriter, req *http.Request) {
