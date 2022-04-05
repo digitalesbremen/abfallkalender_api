@@ -37,7 +37,7 @@ jobs:
         run: go mod download
 
       - name: Create kalender.js mock
-        run: mkdir dist && touch dist/kalender.js
+        run: mkdir dist && touch dist/kalender.js && touch dist/kalender.js.map
 
       - name: Test
         run: go test -v ./...
