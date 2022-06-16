@@ -11,7 +11,7 @@ import (
 	"testing"
 )
 
-func TestGetCalendarHappyPath(t *testing.T) {
+func TestGetCalendarHappyPathWithAcceptHeaderIsTextCalendar(t *testing.T) {
 	controller.Client = &ClientMock{
 		redirectURL: "www.mock.com/redirect",
 		ics:         ([]byte)("some-ics-demo"),
@@ -20,7 +20,23 @@ func TestGetCalendarHappyPath(t *testing.T) {
 	streetName := "Aachener Straße"
 	houseNumber := "22"
 
-	data := sendGetCalendarRequest(t, controller, streetName, houseNumber)
+	data := sendGetCalendarRequest(t, controller, streetName, houseNumber, "text/calendar")
+
+	if string(data) != "some-ics-demo" {
+		t.Errorf("expected response to be %s got %s", "some-ics-demo", string(data))
+	}
+}
+
+func TestGetCalendarHappyPathWithAcceptHeaderIsEmpty(t *testing.T) {
+	controller.Client = &ClientMock{
+		redirectURL: "www.mock.com/redirect",
+		ics:         ([]byte)("some-ics-demo"),
+	}
+
+	streetName := "Aachener Straße"
+	houseNumber := "22"
+
+	data := sendGetCalendarRequest(t, controller, streetName, houseNumber, "")
 
 	if string(data) != "some-ics-demo" {
 		t.Errorf("expected response to be %s got %s", "some-ics-demo", string(data))
@@ -32,7 +48,7 @@ func TestGetCalendarRedirectUrlReturnsError(t *testing.T) {
 		redirectError: errors.New("cannot get redirect URL"),
 	}
 
-	data := sendGetCalendarRequest(t, controller, "Aachener Straße", "22")
+	data := sendGetCalendarRequest(t, controller, "Aachener Straße", "22", "")
 
 	dto := protocolError{}
 	err := json.Unmarshal(data, &dto)
@@ -54,7 +70,7 @@ func TestGetCalendarGetICSReturnsError(t *testing.T) {
 		getICSError: errors.New("cannot get ICS"),
 	}
 
-	data := sendGetCalendarRequest(t, controller, "Aachener Straße", "22")
+	data := sendGetCalendarRequest(t, controller, "Aachener Straße", "22", "")
 
 	dto := protocolError{}
 	err := json.Unmarshal(data, &dto)
@@ -70,8 +86,8 @@ func TestGetCalendarGetICSReturnsError(t *testing.T) {
 	}
 }
 
-func sendGetCalendarRequest(t *testing.T, controller Controller, streetName string, houseNumber string) []byte {
-	request := createTestGetCalendarRequest(streetName, houseNumber)
+func sendGetCalendarRequest(t *testing.T, controller Controller, streetName string, houseNumber string, acceptHeader string) []byte {
+	request := createTestGetCalendarRequest(streetName, houseNumber, acceptHeader)
 	writer := httptest.NewRecorder()
 
 	controller.GetCalendar(writer, request)
@@ -88,9 +104,12 @@ func sendGetCalendarRequest(t *testing.T, controller Controller, streetName stri
 	return data
 }
 
-func createTestGetCalendarRequest(streetName string, houseNumber string) *http.Request {
+func createTestGetCalendarRequest(streetName string, houseNumber string, acceptHeader string) *http.Request {
 	testUrl := "http://www.mock.com/api/street/" + url.QueryEscape(streetName) + "/number/" + houseNumber
 	request := httptest.NewRequest(http.MethodGet, testUrl, nil)
+	if len(acceptHeader) > 0 {
+		request.Header.Set("accept", acceptHeader)
+	}
 
 	// gorilla/mux add street name to vars
 	vars := map[string]string{

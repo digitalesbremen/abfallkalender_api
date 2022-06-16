@@ -4,6 +4,7 @@ import (
 	"github.com/gorilla/mux"
 	"net/http"
 	"net/url"
+	"strings"
 )
 
 func (c Controller) GetCalendar(w http.ResponseWriter, r *http.Request) {
@@ -18,9 +19,15 @@ func (c Controller) GetCalendar(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO check different media types (ics, csv, pdf, html)
+	var response []byte
 
-	ical, err := c.Client.GetICS(redirectUrl, url.QueryEscape(streetName), houseNumber)
+	// TODO check different media types (ics, csv, pdf, html)
+	switch acceptHeader := getAcceptHeader(r); acceptHeader {
+	case NONE:
+		response, err = c.Client.GetICS(redirectUrl, url.QueryEscape(streetName), houseNumber)
+	case ICS:
+		response, err = c.Client.GetICS(redirectUrl, url.QueryEscape(streetName), houseNumber)
+	}
 
 	if err != nil {
 		c.createInternalServerError(w, err)
@@ -29,10 +36,29 @@ func (c Controller) GetCalendar(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("content-type", "text/calendar; charset=utf-8")
-	_, _ = w.Write(ical)
+	_, _ = w.Write(response)
 }
 
 func parseHouseNumber(r *http.Request) string {
 	params := mux.Vars(r)
 	return params["number"]
 }
+
+func getAcceptHeader(r *http.Request) acceptHeader {
+	if len(r.Header.Get("accept")) > 0 {
+		for _, accept := range r.Header.Values("accept") {
+			if strings.Contains(strings.ToLower(accept), strings.ToLower("text/calendar")) {
+				return ICS
+			}
+		}
+	}
+
+	return NONE
+}
+
+type acceptHeader int
+
+const (
+	NONE acceptHeader = iota
+	ICS
+)
