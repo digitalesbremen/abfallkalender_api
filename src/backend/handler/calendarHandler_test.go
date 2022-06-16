@@ -27,6 +27,22 @@ func TestGetCalendarHappyPathWithAcceptHeaderIsTextCalendar(t *testing.T) {
 	}
 }
 
+func TestGetCalendarHappyPathWithAcceptHeaderIsTextCsv(t *testing.T) {
+	controller.Client = &ClientMock{
+		redirectURL: "www.mock.com/redirect",
+		csv:         ([]byte)("some-csv-demo"),
+	}
+
+	streetName := "Aachener Straße"
+	houseNumber := "22"
+
+	data := sendGetCalendarRequest(t, controller, streetName, houseNumber, "text/csv")
+
+	if string(data) != "some-csv-demo" {
+		t.Errorf("expected response to be %s got %s", "some-csv-demo", string(data))
+	}
+}
+
 func TestGetCalendarHappyPathWithAcceptHeaderIsEmpty(t *testing.T) {
 	controller.Client = &ClientMock{
 		redirectURL: "www.mock.com/redirect",

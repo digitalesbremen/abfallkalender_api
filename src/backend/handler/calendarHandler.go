@@ -27,6 +27,8 @@ func (c Controller) GetCalendar(w http.ResponseWriter, r *http.Request) {
 		response, err = c.Client.GetICS(redirectUrl, url.QueryEscape(streetName), houseNumber)
 	case ICS:
 		response, err = c.Client.GetICS(redirectUrl, url.QueryEscape(streetName), houseNumber)
+	case CSV:
+		response, err = c.Client.GetCSV(redirectUrl, url.QueryEscape(streetName), houseNumber)
 	}
 
 	if err != nil {
@@ -47,8 +49,11 @@ func parseHouseNumber(r *http.Request) string {
 func getAcceptHeader(r *http.Request) acceptHeader {
 	if len(r.Header.Get("accept")) > 0 {
 		for _, accept := range r.Header.Values("accept") {
-			if strings.Contains(strings.ToLower(accept), strings.ToLower("text/calendar")) {
+			if strings.Contains(strings.ToLower(accept), "text/calendar") {
 				return ICS
+			}
+			if strings.Contains(strings.ToLower(accept), "text/csv") {
+				return CSV
 			}
 		}
 	}
@@ -61,4 +66,5 @@ type acceptHeader int
 const (
 	NONE acceptHeader = iota
 	ICS
+	CSV
 )
