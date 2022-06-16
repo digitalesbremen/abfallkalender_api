@@ -1,23 +1,23 @@
 # Read all streets of Bremen
-GET https://bremer-abfallkalender-api.herokuapp.com/api/streets
+GET {{baseUrl}}/api/streets
 Accept: application/json
 
 ###
 
 # Read specific street
-GET https://bremer-abfallkalender-api.herokuapp.com/api/street/Aachener+Straße
+GET {{baseUrl}}/api/street/Aachener+Straße
 Accept: application/json
 
 ###
 
 # Read ICS format
-GET https://bremer-abfallkalender-api.herokuapp.com/api/street/Aachener+Straße/number/22
+GET {{baseUrl}}/api/street/Aachener+Straße/number/22
 Accept: text/calendar
 
 ###
 
 # Read CSV format
-GET https://bremer-abfallkalender-api.herokuapp.com/api/street/Aachener+Straße/number/22
+GET {{baseUrl}}/api/street/Aachener+Straße/number/22
 Accept: text/csv
 
 ###
