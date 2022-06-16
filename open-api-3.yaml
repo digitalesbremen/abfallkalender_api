@@ -56,9 +56,12 @@ paths:
       summary: Get ics file of specific address
       responses:
         '200':
-          description: an ics file of specific address
+          description: successful operation
           content:
             text/calendar:
+              schema:
+                type: string
+            text/csv:
               schema:
                 type: string
   /kalender.js:
