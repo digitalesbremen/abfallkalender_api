@@ -23,23 +23,5 @@ docker-run:
 docker-stop:
 	docker stop ${CONTAINER_NAME}
 
-heruko-login:
-	heroku login -i
-
-heruko-container-login:
-	heroku container:login
-
-heruko-container-push:
-	heroku container:push web --app ${HERUKO_APP_NAME}
-
-heruko-container-deploy:
-	heroku container:release web
-
-heruko-container-logs:
-	heroku logs --tail --app ${HERUKO_APP_NAME}
-
-heruko-open-app:
-	heroku open --app bremer-abfallkalender-api
-
 parcel-update-package-lock:
 	npm i --package-lock-only
