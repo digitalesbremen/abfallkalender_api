@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "chart.js": "4.3.0",
-    "lit": "2.6.1"
+    "lit": "2.7.5"
   },
   "devDependencies": {
     "parcel": "2.8.3"
