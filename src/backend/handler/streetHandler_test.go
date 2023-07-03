@@ -31,8 +31,8 @@ func TestGetStreetHappyPath(t *testing.T) {
 	if dto.Name != streetName {
 		t.Errorf("expected street %s got %s", streetName, dto.Name)
 	}
-	if dto.Links.Self.Href != "https://www.mock.com/api/street/Aachener+Stra%C3%9Fe" {
-		t.Errorf("expected self link %s got %s", "https://www.mock.com/api/street/Aachener+Stra%C3%9Fe", dto.Links.Self.Href)
+	if dto.Links.Self.Href != "https://www.mock.com/abfallkalender-api/street/Aachener+Stra%C3%9Fe" {
+		t.Errorf("expected self link %s got %s", "https://www.mock.com/abfallkalender-api/street/Aachener+Stra%C3%9Fe", dto.Links.Self.Href)
 	}
 
 	dto.verifyStreet(t, streetName)
@@ -127,7 +127,7 @@ func sendGetStreetRequest(t *testing.T, controller Controller, streetName string
 }
 
 func createTestGetStreetRequest(streetName string) *http.Request {
-	testUrl := "http://www.mock.com/api/street/" + url.QueryEscape(streetName)
+	testUrl := "http://www.mock.com/abfallkalender-api/street/" + url.QueryEscape(streetName)
 	request := httptest.NewRequest(http.MethodGet, testUrl, nil)
 
 	// gorilla/mux add street name to vars
@@ -143,7 +143,7 @@ func (dto streetWithHouseNumbersDto) verifyStreet(t *testing.T, street string) {
 		t.Errorf("expected street %s got %s", street, dto.Name)
 	}
 
-	expected := fmt.Sprintf("https://www.mock.com/api/street/%s", url.QueryEscape(street))
+	expected := fmt.Sprintf("https://www.mock.com/abfallkalender-api/street/%s", url.QueryEscape(street))
 
 	if dto.Links.Self.Href != expected {
 		t.Errorf("expected self link %s got %s", expected, dto.Links.Self.Href)
@@ -157,7 +157,7 @@ func (dto streetWithHouseNumbersDto) verifyHouseNumber(t *testing.T, street, num
 		t.Errorf(`house numbers should contain %s`, number)
 	}
 
-	expected := fmt.Sprintf("https://www.mock.com/api/street/%s/number/%s", url.QueryEscape(street), number)
+	expected := fmt.Sprintf("https://www.mock.com/abfallkalender-api/street/%s/number/%s", url.QueryEscape(street), number)
 
 	if houseNumber != nil && houseNumber.Links.Self.Href != expected {
 		t.Errorf("expected house number self link %s got %s", expected, houseNumber.Links.Self.Href)

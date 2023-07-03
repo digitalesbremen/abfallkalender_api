@@ -24,25 +24,25 @@ var routes = Routes{
 	Route{
 		Name:        "Open Api documentation (yaml)",
 		Method:      "GET",
-		Pattern:     "/api",
+		Pattern:     "/abfallkalender-api",
 		HandlerFunc: handler.OpenApiDocumentation,
 	},
 	Route{
 		Name:        "Streets",
 		Method:      "GET",
-		Pattern:     "/api/streets",
+		Pattern:     "/abfallkalender-api/streets",
 		HandlerFunc: handler.NewController().GetStreets,
 	},
 	Route{
 		Name:        "Street",
 		Method:      "GET",
-		Pattern:     "/api/street/{street}",
+		Pattern:     "/abfallkalender-api/street/{street}",
 		HandlerFunc: handler.NewController().GetStreet,
 	},
 	Route{
 		Name:        "ICS",
 		Method:      "GET",
-		Pattern:     "/api/street/{street}/number/{number}",
+		Pattern:     "/abfallkalender-api/street/{street}/number/{number}",
 		HandlerFunc: handler.NewController().GetCalendar,
 	},
 	Route{

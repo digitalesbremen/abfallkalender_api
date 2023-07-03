@@ -121,7 +121,7 @@ func sendGetCalendarRequest(t *testing.T, controller Controller, streetName stri
 }
 
 func createTestGetCalendarRequest(streetName string, houseNumber string, acceptHeader string) *http.Request {
-	testUrl := "http://www.mock.com/api/street/" + url.QueryEscape(streetName) + "/number/" + houseNumber
+	testUrl := "http://www.mock.com/abfallkalender-api/street/" + url.QueryEscape(streetName) + "/number/" + houseNumber
 	request := httptest.NewRequest(http.MethodGet, testUrl, nil)
 	if len(acceptHeader) > 0 {
 		request.Header.Set("accept", acceptHeader)

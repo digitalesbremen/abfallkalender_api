@@ -21,7 +21,7 @@ paths:
             text/yaml:
               schema:
                 type: string
-  /api:
+  /abfallkalender-api:
     get:
       summary: Get Open API specification
       responses:
@@ -31,7 +31,7 @@ paths:
             text/yaml:
               schema:
                 type: string
-  /api/streets:
+  /abfallkalender-api/streets:
     get:
       summary: Get all streets of Bremen
       responses:
@@ -41,7 +41,7 @@ paths:
             application/hal+json:
               schema:
                 $href: '#/components/schemas/Streets'
-  /api/street/{streetName}:
+  /abfallkalender-api/street/{streetName}:
     get:
       summary: Get specific street incl. house numbers in Bremen
       responses:
@@ -51,7 +51,7 @@ paths:
             application/hal+json:
               schema:
                 $href: '#/components/schemas/_embedded'
-  /api/street/{streetName}/number/{number}:
+  /abfallkalender-api/street/{streetName}/number/{number}:
     get:
       summary: Get ics file of specific address
       responses:
