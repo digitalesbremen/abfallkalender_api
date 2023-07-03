@@ -64,6 +64,16 @@ paths:
             text/csv:
               schema:
                 type: string
+  /abfallkalender-api/street/{streetName}/number/{number}/next:
+    get:
+      summary: Get garbage types of next collection date
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/hal+json:
+              schema:
+                $href: '#/components/schemas/Next'
   /kalender.js:
     get:
       summary: Get kalender web component
@@ -77,6 +87,22 @@ paths:
 
 components:
   schemas:
+    Next:
+      properties:
+        day_of_collection:
+          type: string
+          format: date (YYYY-MM-DD)
+          description: The day of garbage collection
+        garbage_types:
+          type: array
+          items:
+            type: string
+            enum:
+              - yellow
+              - blue
+              - brown
+              - black
+              - christmas
     Street:
       properties:
         name:

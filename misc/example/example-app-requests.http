@@ -21,3 +21,8 @@ GET {{baseUrl}}/abfallkalender-api/street/Aachener+Straße/number/22
 Accept: text/csv
 
 ###
+
+# Read next
+GET {{baseUrl}}/abfallkalender-api/street/Aachener+Straße/number/22/next
+
+###

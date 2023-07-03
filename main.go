@@ -9,10 +9,10 @@ import (
 	"os"
 )
 
-//go:embed dist/kalender.js
+// //go:embed dist/kalender.js
 var kalenderJS string
 
-//go:embed dist/kalender.js.map
+// //go:embed dist/kalender.js.map
 var kalenderJSMap string
 
 func main() {

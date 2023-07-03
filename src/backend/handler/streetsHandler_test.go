@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -86,7 +86,7 @@ func sendGetStreetsRequest(t *testing.T, controller Controller) []byte {
 	res := writer.Result()
 	defer res.Body.Close()
 
-	data, err := ioutil.ReadAll(res.Body)
+	data, err := io.ReadAll(res.Body)
 
 	if err != nil {
 		t.Errorf("expected error to be nil got %v", err)

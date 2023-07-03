@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/gorilla/mux"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -111,7 +111,7 @@ func sendGetCalendarRequest(t *testing.T, controller Controller, streetName stri
 	res := writer.Result()
 	defer res.Body.Close()
 
-	data, err := ioutil.ReadAll(res.Body)
+	data, err := io.ReadAll(res.Body)
 
 	if err != nil {
 		t.Errorf("expected error to be nil got %v", err)

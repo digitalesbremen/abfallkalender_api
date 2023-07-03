@@ -46,6 +46,12 @@ var routes = Routes{
 		HandlerFunc: handler.NewController().GetCalendar,
 	},
 	Route{
+		Name:        "Next",
+		Method:      "GET",
+		Pattern:     "/abfallkalender-api/street/{street}/number/{number}/next",
+		HandlerFunc: handler.NewController().GetNext,
+	},
+	Route{
 		Name:        "Kalender web component",
 		Method:      "GET",
 		Pattern:     "/kalender.js",
