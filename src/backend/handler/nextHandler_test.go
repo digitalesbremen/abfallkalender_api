@@ -31,7 +31,7 @@ func TestGetNextHappyPath(t *testing.T) {
 	data := sendGetNextRequest(t, controller, streetName, houseNumber)
 
 	responseWithoutNewLines := strings.ReplaceAll(string(data), "\n", "")
-	expectedResponse := "{\"day_of_collection\":\"2045.01.02\",\"garbage_types\":[\"brown\",\"black\"]}"
+	expectedResponse := "{\"day_of_collection\":\"2045-01-02\",\"garbage_types\":[\"brown\",\"black\"]}"
 
 	if responseWithoutNewLines != expectedResponse {
 		t.Errorf("expected response to be %s got %s", expectedResponse, string(data))
