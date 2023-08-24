@@ -11,7 +11,7 @@
     "build": "parcel build src/frontend/kalender.js"
   },
   "dependencies": {
-    "chart.js": "4.3.3",
+    "chart.js": "4.4.0",
     "lit": "2.8.0"
   },
   "devDependencies": {
