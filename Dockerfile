@@ -4,8 +4,8 @@
 # Step 1: create multi stage assets builder
 # HINT: up to now parcel does not support arm -> https://github.com/parcel-bundler/parcel/issues/5812
 # .github actions configuration is using multi arch target plattform
-# assets builder is only used to create assets, so no special arm support is needed -> using amd64 (supported by parcel)
-FROM amd64/node:alpine AS assets
+# assets builder is only used to create assets, using the official node:alpine image
+FROM node:alpine AS assets
 
 # Create app directory
 WORKDIR /app
