@@ -1,8 +1,9 @@
-openapi: 3.1.0
+openapi: 3.0.3
 
 info:
   title: Bremer Abfallkalender API
   version: ${VERSION}
+  description: API for accessing Bremen's waste collection calendar
   contact:
     name: Lars Michaelis
     email: mail@larmic.de
@@ -14,9 +15,10 @@ paths:
   /:
     get:
       summary: Get Open API specification
+      description: Returns the OpenAPI specification in YAML format
       responses:
         '200':
-          description: YAML format
+          description: OpenAPI specification in YAML format
           content:
             text/yaml:
               schema:
@@ -24,9 +26,10 @@ paths:
   /abfallkalender-api:
     get:
       summary: Get Open API specification
+      description: Returns the OpenAPI specification in YAML format
       responses:
         '200':
-          description: YAML format
+          description: OpenAPI specification in YAML format
           content:
             text/yaml:
               schema:
@@ -34,46 +37,175 @@ paths:
   /abfallkalender-api/streets:
     get:
       summary: Get all streets of Bremen
+      description: Returns a list of all streets in Bremen
       responses:
         '200':
-          description: a list of all streets of Bremen
+          description: A list of all streets in Bremen
           content:
             application/hal+json:
               schema:
-                $href: '#/components/schemas/Streets'
-  /abfallkalender-api/street/{streetName}:
+                $ref: '#/components/schemas/Streets'
+              example:
+                streets:
+                  - name: "Hauptstraße"
+                    _links:
+                      self:
+                        href: "https://api.example.com/abfallkalender-api/street/Hauptstraße"
+                  - name: "Bahnhofstraße"
+                    _links:
+                      self:
+                        href: "https://api.example.com/abfallkalender-api/street/Bahnhofstraße"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: 500
+                message: "Internal Server Error"
+  /abfallkalender-api/street/{street}:
     get:
       summary: Get specific street incl. house numbers in Bremen
+      description: Returns details of a specific street including all house numbers
+      parameters:
+        - name: street
+          in: path
+          required: true
+          description: Name of the street
+          schema:
+            type: string
       responses:
         '200':
-          description: a street with all existing house numbers in Bremen
+          description: A street with all existing house numbers in Bremen
           content:
             application/hal+json:
               schema:
-                $href: '#/components/schemas/_embedded'
-  /abfallkalender-api/street/{streetName}/number/{number}:
+                $ref: '#/components/schemas/Street'
+              example:
+                name: "Hauptstraße"
+                houseNumbers:
+                  - number: "1"
+                    _links:
+                      self:
+                        href: "https://api.example.com/abfallkalender-api/street/Hauptstraße/number/1"
+                  - number: "2"
+                    _links:
+                      self:
+                        href: "https://api.example.com/abfallkalender-api/street/Hauptstraße/number/2"
+                _links:
+                  self:
+                    href: "https://api.example.com/abfallkalender-api/street/Hauptstraße"
+        '404':
+          description: Street not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: 404
+                message: "Street 'Example Street' not found"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: 500
+                message: "Internal Server Error"
+  /abfallkalender-api/street/{street}/number/{number}:
     get:
-      summary: Get ics file of specific address
+      summary: Get calendar file for specific address
+      description: Returns a calendar file (ICS or CSV) for a specific address
+      parameters:
+        - name: street
+          in: path
+          required: true
+          description: Name of the street
+          schema:
+            type: string
+        - name: number
+          in: path
+          required: true
+          description: House number
+          schema:
+            type: string
       responses:
         '200':
-          description: successful operation
+          description: Calendar file for the specified address
           content:
             text/calendar:
               schema:
                 type: string
+              example: "BEGIN:VCALENDAR\nVERSION:2.0\n..."
             text/csv:
               schema:
                 type: string
-  /abfallkalender-api/street/{streetName}/number/{number}/next:
+              example: "date,type\n2023-01-01,yellow\n..."
+        '404':
+          description: Address not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: 404
+                message: "Address 'Example Street 42' not found"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: 500
+                message: "Internal Server Error"
+  /abfallkalender-api/street/{street}/number/{number}/next:
     get:
       summary: Get garbage types of next collection date
+      description: Returns the garbage types for the next collection date at a specific address
+      parameters:
+        - name: street
+          in: path
+          required: true
+          description: Name of the street
+          schema:
+            type: string
+        - name: number
+          in: path
+          required: true
+          description: House number
+          schema:
+            type: string
       responses:
         '200':
-          description: successful operation
+          description: Next collection date and garbage types
           content:
             application/hal+json:
               schema:
-                $href: '#/components/schemas/Next'
+                $ref: '#/components/schemas/Next'
+              example:
+                day_of_collection: "2023-01-15"
+                garbage_types: ["yellow", "blue"]
+        '404':
+          description: Address not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: 404
+                message: "Address 'Example Street 42' not found"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: 500
+                message: "Internal Server Error"
   /metrics:
     get:
       summary: Get Prometheus metrics
@@ -89,13 +221,16 @@ paths:
 components:
   schemas:
     Next:
+      type: object
       properties:
         day_of_collection:
           type: string
-          format: date (YYYY-MM-DD)
-          description: The day of garbage collection
+          format: date
+          description: The day of garbage collection (YYYY-MM-DD)
+          example: "2023-01-15"
         garbage_types:
           type: array
+          description: Types of garbage collected on this date
           items:
             type: string
             enum:
@@ -104,47 +239,71 @@ components:
               - brown
               - black
               - christmas
+          example: ["yellow", "blue"]
     Street:
+      type: object
       properties:
         name:
           type: string
-          description: street name
+          description: Street name
+          example: "Hauptstraße"
         houseNumbers:
           type: array
+          description: List of house numbers on this street
           items:
             $ref: '#/components/schemas/HouseNumber'
         _links:
-          $href: '#/components/schemas/SelfLink'
-          description: Street resource URL
+          $ref: '#/components/schemas/Links'
+          description: HATEOAS links for this resource
     Streets:
+      type: object
       properties:
         streets:
           type: array
+          description: List of streets
           items:
-            $href: '#/components/schemas/StreetName'
+            $ref: '#/components/schemas/StreetName'
     StreetName:
+      type: object
       properties:
         name:
           type: string
-          description: street name
+          description: Street name
+          example: "Hauptstraße"
         _links:
-          $href: '#/components/schemas/SelfLink'
-          description: Street resource URL
+          $ref: '#/components/schemas/Links'
+          description: HATEOAS links for this resource
     HouseNumber:
+      type: object
       properties:
         number:
           type: string
-          description: house number
+          description: House number
+          example: "42"
         _links:
-          $href: '#/components/schemas/SelfLink'
-          description: House number resource URL
+          $ref: '#/components/schemas/Links'
+          description: HATEOAS links for this resource
     Links:
+      type: object
       properties:
         self:
-          $href: '#/components/schemas/SelfLink'
-          description: Resource URL
+          $ref: '#/components/schemas/SelfLink'
+          description: Self-referencing link
     SelfLink:
+      type: object
       properties:
         href:
           type: string
-          description: Resource URL
+          description: URL of the resource
+          example: "https://api.example.com/abfallkalender-api/street/Hauptstraße"
+    Error:
+      type: object
+      properties:
+        code:
+          type: integer
+          description: HTTP status code
+          example: 404
+        message:
+          type: string
+          description: Error message
+          example: "Street 'Example Street' or house numbers not found"
