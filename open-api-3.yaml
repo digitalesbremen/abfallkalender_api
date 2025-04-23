@@ -84,6 +84,17 @@ paths:
             text/javascript:
               schema:
                 type: string
+  /metrics:
+    get:
+      summary: Get Prometheus metrics
+      description: Exposes Prometheus metrics for monitoring the application
+      responses:
+        '200':
+          description: Prometheus metrics in text format
+          content:
+            text/plain:
+              schema:
+                type: string
 
 components:
   schemas:
@@ -147,4 +158,3 @@ components:
         href:
           type: string
           description: Resource URL
-
