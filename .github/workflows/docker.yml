@@ -8,8 +8,11 @@ on:
 env:
   IMAGE_NAME: larmic/abfallkalender_api
 
-jobs:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
+jobs:
   build:
     name: Build and push Docker image
     runs-on: ubuntu-latest
