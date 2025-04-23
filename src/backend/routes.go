@@ -2,6 +2,7 @@ package api
 
 import (
 	"abfallkalender_api/src/backend/handler"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"net/http"
 )
 
@@ -15,6 +16,12 @@ type Route struct {
 type Routes []Route
 
 var routes = Routes{
+	Route{
+		Name:        "Metrics",
+		Method:      "GET",
+		Pattern:     "/metrics",
+		HandlerFunc: promhttp.Handler().ServeHTTP,
+	},
 	Route{
 		Name:        "Open Api documentation (yaml)",
 		Method:      "GET",
