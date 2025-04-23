@@ -74,16 +74,6 @@ paths:
             application/hal+json:
               schema:
                 $href: '#/components/schemas/Next'
-  /kalender.js:
-    get:
-      summary: Get kalender web component
-      responses:
-        '200':
-          description: a kalender web component to embedd
-          content:
-            text/javascript:
-              schema:
-                type: string
   /metrics:
     get:
       summary: Get Prometheus metrics
