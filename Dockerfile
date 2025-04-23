@@ -1,31 +1,32 @@
-# Use multi stage build to# minimize generated docker images size
-# see: https://docs.docker.com/develop/develop-images/multistage-build/
-
-# Step 1: create multi stage assets builder
-# HINT: up to now parcel does not support arm -> https://github.com/parcel-bundler/parcel/issues/5812
-# .github actions configuration is using multi arch target plattform
-# assets builder is only used to create assets, using the official node:alpine image
-FROM node:alpine AS assets
-
-# Create app directory
-WORKDIR /app
-
-# Install python and other dependencies via apk
-RUN apk update && apk add python3 g++ make && rm -rf /var/cache/apk/*
-
-# Install app dependencies
-# A wildcard is used to ensure both package.json AND package-lock.json are copied where available (npm@5+)
-COPY package*.json /app/
-COPY src/frontend /app/src/frontend
-
-# Create package-lock.json
-#RUN npm i --package-lock-only
-
-# Make a clean npm install and only install modules needed for production
-RUN npm ci
-
-# Build assets
-RUN npm run build
+# Does not work for arm
+#   # Use multi stage build to# minimize generated docker images size
+#   # see: https://docs.docker.com/develop/develop-images/multistage-build/
+#
+#   # Step 1: create multi stage assets builder
+#   # HINT: up to now parcel does not support arm -> https://github.com/parcel-bundler/parcel/issues/5812
+#   # .github actions configuration is using multi arch target plattform
+#   # assets builder is only used to create assets, using the official node:alpine image
+#   FROM node:alpine AS assets
+#
+#   # Create app directory
+#   WORKDIR /app
+#
+#   # Install python and other dependencies via apk
+#   RUN apk update && apk add python3 g++ make && rm -rf /var/cache/apk/*
+#
+#   # Install app dependencies
+#   # A wildcard is used to ensure both package.json AND package-lock.json are copied where available (npm@5+)
+#   COPY package*.json /app/
+#   COPY src/frontend /app/src/frontend
+#
+#   # Create package-lock.json
+#   #RUN npm i --package-lock-only
+#
+#   # Make a clean npm install and only install modules needed for production
+#   RUN npm ci
+#
+#   # Build assets
+#   RUN npm run build
 
 
 # Step 2: create multi stage backend builder (about 800 MB)
@@ -40,7 +41,7 @@ COPY go.* /app/
 COPY open-api-3.yaml /app
 COPY VERSION /app
 COPY src/backend /app/src/backend
-COPY --from=assets /app/dist /app/dist
+#COPY --from=assets /app/dist /app/dist
 
 RUN go mod download
 RUN go mod tidy # prevent missing go.sum entry for module
