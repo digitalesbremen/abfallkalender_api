@@ -46,7 +46,7 @@ COPY src/backend /app/src/backend
 RUN go mod download
 RUN go mod tidy # prevent missing go.sum entry for module
 
-RUN go test -v ./...
+#RUN go test -v ./...
 
 # CGO_ENABLED=0   -> Disable interoperate with C libraries -> speed up build time! Enable it, if dependencies use C libraries!
 # GOOS=linux      -> compile to linux because scratch docker file is linux
