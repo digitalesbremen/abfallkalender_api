@@ -30,7 +30,7 @@
 
 
 # Step 2: create multi stage backend builder (about 800 MB)
-FROM golang:1.24 AS builder
+FROM golang:1.25 AS builder
 LABEL stage=intermediate
 RUN go version
 
