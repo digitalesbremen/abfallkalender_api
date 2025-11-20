@@ -39,7 +39,6 @@ WORKDIR /app
 COPY main.go /app/
 COPY go.* /app/
 COPY open-api-3.yaml /app
-COPY VERSION /app
 COPY src/backend /app/src/backend
 #COPY --from=assets /app/dist /app/dist
 
@@ -59,8 +58,9 @@ ARG TARGETPLATFORM
 
 RUN echo "I am running on $BUILDPLATFORM, building for $TARGETPLATFORM"
 
-# set version in open-api-3.yaml
-RUN sed -i "s/\${VERSION}/$(cat VERSION)/" open-api-3.yaml
+# set version in open-api-3.yaml (provided via build-arg)
+ARG VERSION
+RUN sed -i "s/\${VERSION}/${VERSION}/" open-api-3.yaml
 
 RUN if [ "$TARGETPLATFORM" = "linux/arm/v7" ] ; then \
         echo "I am building linux/arm/v7 with CGO_ENABLED=0 GOARCH=arm GOARM=7" ; \

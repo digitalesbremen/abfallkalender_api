@@ -2,8 +2,8 @@ name: Build docker and push
 
 on:
   push:
-    branches:
-      - 'main'
+    tags:
+      - '*'
 
 env:
   IMAGE_NAME: larmic/abfallkalender_api
@@ -21,8 +21,8 @@ jobs:
       - name: Check out code into the Go module directory
         uses: actions/checkout@v4
 
-      - name: Set up version
-        run: echo "VERSION=$(cat VERSION)" >> $GITHUB_ENV
+      - name: Set up version from git tag
+        run: echo "VERSION=${GITHUB_REF_NAME}" >> $GITHUB_ENV
 
       - name: Login to DockerHub
         uses: docker/login-action@v3
