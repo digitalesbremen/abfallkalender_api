@@ -130,5 +130,6 @@ func parseStreetName(r *http.Request) string {
 }
 
 func buildHouseNumberUrl(r *http.Request, streetName string, houseNumber string) string {
-	return fmt.Sprintf("https://%s/abfallkalender-api/street/%s/number/%s", r.Host, url.QueryEscape(streetName), url.QueryEscape(houseNumber))
+	p := fmt.Sprintf("/abfallkalender-api/street/%s/number/%s", url.QueryEscape(streetName), url.QueryEscape(houseNumber))
+	return absoluteURL(r, p)
 }

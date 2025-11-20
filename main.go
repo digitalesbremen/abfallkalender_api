@@ -51,8 +51,11 @@ func main() {
 	log.Printf("Port is set to %s\n", port)
 
 	// TODO use go routine / non blocking
-	log.Fatal(http.ListenAndServe(":"+port,
-		handlers.CompressHandler(
-			handlers.CORS(
-				handlers.AllowedOrigins([]string{"*"}))(router))))
+	// Respect reverse proxy headers for scheme/host (X-Forwarded-*)
+	var wrapped http.Handler = handlers.ProxyHeaders(router)
+	// Enable compression and permissive CORS (as before)
+	wrapped = handlers.CompressHandler(wrapped)
+	wrapped = handlers.CORS(handlers.AllowedOrigins([]string{"*"}))(wrapped)
+
+	log.Fatal(http.ListenAndServe(":"+port, wrapped))
 }
