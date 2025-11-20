@@ -26,7 +26,9 @@ func requestScheme(r *http.Request) string {
 	if r.TLS != nil {
 		return "https"
 	}
-	return "http"
+	// Default to https to generate secure self links when no proxy hints are present
+	// (e.g. in tests or when running behind TLS-terminating proxies without headers).
+	return "https"
 }
 
 // requestHost determines the effective host considering reverse proxy headers.
