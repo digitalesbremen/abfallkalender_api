@@ -56,7 +56,16 @@ func (c Controller) GetStreet(w http.ResponseWriter, r *http.Request) {
 	for _, houseNumber := range houseNumbers {
 		houseNumberDto := houseNumberDto{}
 		houseNumberDto.Number = houseNumber
-		houseNumberDto.Links.Self.Href = buildHouseNumberUrl(r, streetName, houseNumber)
+		// Base URL to the calendar resource (content is controlled via Accept header)
+		baseCalURL := buildHouseNumberUrl(r, streetName, houseNumber)
+		houseNumberDto.Links.Self.Href = baseCalURL
+		// Convenience links: explicit media variants and the computed next endpoint
+		houseNumberDto.Links.ICS.Href = baseCalURL
+		houseNumberDto.Links.ICS.Type = "text/calendar; charset=utf-8"
+		houseNumberDto.Links.CSV.Href = baseCalURL
+		houseNumberDto.Links.CSV.Type = "text/csv; charset=utf-8"
+		houseNumberDto.Links.Next.Href = baseCalURL + "/next"
+		houseNumberDto.Links.Next.Type = "application/json; charset=utf-8"
 		numbers = append(numbers, houseNumberDto)
 	}
 
@@ -121,6 +130,20 @@ type houseNumberDto struct {
 		Self struct {
 			Href string `json:"href"`
 		} `json:"self"`
+		// Convenience links to the same calendar resource with media type hints
+		// and to the computed "next" JSON endpoint.
+		ICS struct {
+			Href string `json:"href"`
+			Type string `json:"type,omitempty"`
+		} `json:"ics,omitempty"`
+		CSV struct {
+			Href string `json:"href"`
+			Type string `json:"type,omitempty"`
+		} `json:"csv,omitempty"`
+		Next struct {
+			Href string `json:"href"`
+			Type string `json:"type,omitempty"`
+		} `json:"next"`
 	} `json:"_links"`
 }
 

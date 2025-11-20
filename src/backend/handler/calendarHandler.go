@@ -20,15 +20,19 @@ func (c Controller) GetCalendar(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var response []byte
+	contentType := "text/calendar; charset=utf-8" // default to ICS
 
-	// TODO check different media types (ics, csv, pdf, html)
+	// Check different media types via Accept header (ics, csv)
 	switch acceptHeader := getAcceptHeader(r); acceptHeader {
 	case NONE:
 		response, err = c.Client.GetICS(redirectUrl, url.QueryEscape(streetName), houseNumber)
+		contentType = "text/calendar; charset=utf-8"
 	case ICS:
 		response, err = c.Client.GetICS(redirectUrl, url.QueryEscape(streetName), houseNumber)
+		contentType = "text/calendar; charset=utf-8"
 	case CSV:
 		response, err = c.Client.GetCSV(redirectUrl, url.QueryEscape(streetName), houseNumber)
+		contentType = "text/csv; charset=utf-8"
 	}
 
 	if err != nil {
@@ -36,8 +40,9 @@ func (c Controller) GetCalendar(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Set headers before writing status/body to ensure clients detect correctly
+	w.Header().Set("Content-Type", contentType)
 	w.WriteHeader(http.StatusOK)
-	w.Header().Set("content-type", "text/calendar; charset=utf-8")
 	_, _ = w.Write(response)
 }
 
