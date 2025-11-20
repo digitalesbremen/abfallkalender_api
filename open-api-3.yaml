@@ -89,10 +89,14 @@ paths:
                     _links:
                       self:
                         href: "https://api.example.com/abfallkalender-api/street/Hauptstraße/number/1"
+                      next:
+                        href: "https://api.example.com/abfallkalender-api/street/Hauptstraße/number/1/next"
                   - number: "2"
                     _links:
                       self:
                         href: "https://api.example.com/abfallkalender-api/street/Hauptstraße/number/2"
+                      next:
+                        href: "https://api.example.com/abfallkalender-api/street/Hauptstraße/number/2/next"
                 _links:
                   self:
                     href: "https://api.example.com/abfallkalender-api/street/Hauptstraße"
@@ -133,8 +137,12 @@ paths:
             type: string
       responses:
         '200':
-          description: Calendar file for the specified address
+          description: Calendar file for the specified address, or an HTML preview when requested by browsers
           content:
+            text/html:
+              schema:
+                type: string
+              example: "<!doctype html><html><head><meta charset=\"utf-8\"><title>Abfallkalender – Aachener Straße 22</title></head><body><pre>BEGIN:VCALENDAR\nVERSION:2.0\n...</pre></body></html>"
             text/calendar:
               schema:
                 type: string
@@ -289,6 +297,9 @@ components:
         self:
           $ref: '#/components/schemas/SelfLink'
           description: Self-referencing link
+        next:
+          $ref: '#/components/schemas/NextLink'
+          description: Link to JSON with the next collection day (only present on house number resources)
     SelfLink:
       type: object
       properties:
@@ -296,6 +307,13 @@ components:
           type: string
           description: URL of the resource
           example: "https://api.example.com/abfallkalender-api/street/Hauptstraße"
+    NextLink:
+      type: object
+      properties:
+        href:
+          type: string
+          description: URL of the next-endpoint for this resource
+          example: "https://api.example.com/abfallkalender-api/street/Hauptstraße/number/1/next"
     Error:
       type: object
       properties:

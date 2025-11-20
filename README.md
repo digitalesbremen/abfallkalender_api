@@ -68,13 +68,33 @@ Base path: your deployment domain. Examples below assume `https://your.host`.
   - Returns the street and all available house numbers.
   - Response: `application/json` (HAL style)
   - Path parameter `street` must match the official spelling (URL‑encode umlauts/ß).
+  - Each house number contains minimal links to keep the payload small:
+    - `_links.self` → calendar resource (default ICS in browsers; CSV via `Accept: text/csv`)
+    - `_links.next` → JSON with the next collection day
+  - Example snippet:
+    ```json
+    {
+      "name": "Aachener Straße",
+      "houseNumbers": [
+        {
+          "number": "22",
+          "_links": {
+            "self": {"href": "https://your.host/abfallkalender-api/street/Aachener%20Stra%C3%9Fe/number/22"},
+            "next": {"href": "https://your.host/abfallkalender-api/street/Aachener%20Stra%C3%9Fe/number/22/next"}
+          }
+        }
+      ],
+      "_links": {"self": {"href": "https://your.host/abfallkalender-api/street/Aachener%20Stra%C3%9Fe"}}
+    }
+    ```
 
 - GET `/abfallkalender-api/street/{street}/number/{number}`
   - Returns the pickup calendar for the address.
   - Content depends on the `Accept` header:
+    - `Accept: text/html` → lightweight HTML preview showing the ICS content inline (no download); includes a link to `…/next`
     - `Accept: text/calendar` → upstream ICS content
     - `Accept: text/csv` → upstream CSV content
-    - No `Accept` header → ICS by default
+    - No `Accept` header → ICS by default (for CLI/cURL compatibility)
 
 - GET `/abfallkalender-api/street/{street}/number/{number}/next`
   - Returns the next upcoming collection day and the detected waste types.
