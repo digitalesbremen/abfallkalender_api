@@ -5,10 +5,6 @@
 [![Build docker and push](https://github.com/digitalesbremen/abfallkalender_api/actions/workflows/docker.yml/badge.svg)](https://github.com/digitalesbremen/abfallkalender_api/actions/workflows/docker.yml)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-This project is still alpha and in active development.
-
----
-
 ## What is this project?
 
 An HTTP API and tiny web component that act as a stable proxy in front of Bremen’s official waste collection calendar (Bremer Abfallkalender). The official service has no public, stable API. Instead, it serves data under a dynamic, time‑varying base URL. This project discovers that dynamic URL at runtime and exposes a minimal, predictable API on top.
