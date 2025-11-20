@@ -39,8 +39,9 @@ func (c Controller) GetNext(w http.ResponseWriter, r *http.Request) {
 		Types: garbageTypes,
 	}
 
+	// JSON response with proper content type and UTF-8 charset
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
-	w.Header().Set("content-type", "text/calendar; charset=utf-8")
 	_ = json.NewEncoder(w).Encode(response)
 }
 

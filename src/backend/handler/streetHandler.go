@@ -74,8 +74,9 @@ func (c Controller) GetStreet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Set headers before writing status/body to ensure clients detect UTF-8 correctly
+	w.Header().Set("Content-Type", "application/hal+json; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
-	w.Header().Set("content-type", "application/json; charset=utf-8")
 	_, _ = w.Write(dto)
 }
 
