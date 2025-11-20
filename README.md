@@ -3,6 +3,8 @@
 [![Build backend](https://github.com/digitalesbremen/abfallkalender_api/actions/workflows/backend.yml/badge.svg)](https://github.com/digitalesbremen/abfallkalender_api/actions/workflows/backend.yml)
 [![Build frontend](https://github.com/digitalesbremen/abfallkalender_api/actions/workflows/frontend.yml/badge.svg)](https://github.com/digitalesbremen/abfallkalender_api/actions/workflows/frontend.yml)
 [![Build docker and push](https://github.com/digitalesbremen/abfallkalender_api/actions/workflows/docker.yml/badge.svg)](https://github.com/digitalesbremen/abfallkalender_api/actions/workflows/docker.yml)
+[![Docker hub image](https://img.shields.io/docker/image-size/larmic/abfallkalender_api?label=dockerhub)](https://hub.docker.com/repository/docker/larmic/abfallkalender_api)
+![Docker Image Version (latest by date)](https://img.shields.io/docker/v/larmic/abfallkalender_api)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 ## What is this project?
