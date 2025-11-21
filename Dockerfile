@@ -77,7 +77,7 @@ RUN if [ "$TARGETPLATFORM" = "linux/arm64" ] ; then \
         env CGO_ENABLED=0 GOARCH=arm64 GOARM=7 go build -a -o main . ; \
         echo "Build done" ; \
         echo "I am loading AWS lamdba-adapter" ; \
-        wget -O lambda-adapter https://github.com/awslabs/aws-lambda-web-adapter/releases/download/v0.8.4/lambda-adapter-aarch64 && chmod +x lambda-adapter; \
+        wget -O lambda-adapter https://github.com/awslabs/aws-lambda-web-adapter/releases/download/v0.9.1/lambda-adapter-aarch64 && chmod +x lambda-adapter; \
         echo "Loading done" ; \
     fi
 
@@ -86,7 +86,7 @@ RUN if [ "$TARGETPLATFORM" = "linux/amd64" ] ; then \
         env CGO_ENABLED=0 GOARCH=amd64 go build -a -o main . ; \
         echo "Build done" ; \
         echo "I am loading AWS lamdba-adapter" ; \
-        wget -O lambda-adapter https://github.com/awslabs/aws-lambda-web-adapter/releases/download/v0.8.4/lambda-adapter-x86_64 && chmod +x lambda-adapter; \
+        wget -O lambda-adapter https://github.com/awslabs/aws-lambda-web-adapter/releases/download/v0.9.1/lambda-adapter-x86_64 && chmod +x lambda-adapter; \
         echo "Loading done" ; \
     fi
 
