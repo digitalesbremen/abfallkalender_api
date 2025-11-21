@@ -29,10 +29,10 @@
       "customType": "regex",
       "fileMatch": ["^Dockerfile$"],
       "matchStrings": [
-        "COPY --from=public\\.ecr\\.aws\\/awsguru\\/aws-lambda-adapter:(?<currentValue>.*?) "
+        "https:\\/\\/github\\.com\\/awslabs\\/aws-lambda-web-adapter\\/releases\\/download\\/v(?<currentValue>.*?)\\/"
       ],
-      "datasourceTemplate": "docker",
-      "depNameTemplate": "public.ecr.aws/awsguru/aws-lambda-adapter"
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "awslabs/aws-lambda-web-adapter"
     }
   ]
 }

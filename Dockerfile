@@ -62,22 +62,32 @@ RUN echo "I am running on $BUILDPLATFORM, building for $TARGETPLATFORM"
 ARG VERSION
 RUN sed -i "s/\${VERSION}/${VERSION}/" open-api-3.yaml
 
+# create dummy lamdba-adapter (not supported and required by linux/arm/v7 (raspberry,...)
+RUN touch lambda-adapter
+
 RUN if [ "$TARGETPLATFORM" = "linux/arm/v7" ] ; then \
         echo "I am building linux/arm/v7 with CGO_ENABLED=0 GOARCH=arm GOARM=7" ; \
         env CGO_ENABLED=0 GOARCH=arm GOARM=7 go build -a -o main . ; \
         echo "Build done" ; \
+        echo "I am skipping loading AWS lamdba-adapter, because not supported by platform" ; \
     fi
 
 RUN if [ "$TARGETPLATFORM" = "linux/arm64" ] ; then \
         echo "I am building linux/arm64 with CGO_ENABLED=0 GOARCH=arm64 GOARM=7" ; \
         env CGO_ENABLED=0 GOARCH=arm64 GOARM=7 go build -a -o main . ; \
         echo "Build done" ; \
+        echo "I am loading AWS lamdba-adapter" ; \
+        wget -O lambda-adapter https://github.com/awslabs/aws-lambda-web-adapter/releases/download/v0.8.4/lambda-adapter-aarch64 && chmod +x lambda-adapter; \
+        echo "Loading done" ; \
     fi
 
 RUN if [ "$TARGETPLATFORM" = "linux/amd64" ] ; then \
         echo "I am building linux/amd64 with CGO_ENABLED=0 GOARCH=amd64" ; \
         env CGO_ENABLED=0 GOARCH=amd64 go build -a -o main . ; \
         echo "Build done" ; \
+        echo "I am loading AWS lamdba-adapter" ; \
+        wget -O lambda-adapter https://github.com/awslabs/aws-lambda-web-adapter/releases/download/v0.8.4/lambda-adapter-x86_64 && chmod +x lambda-adapter; \
+        echo "Loading done" ; \
     fi
 
 # Step 2: create minimal executable image (less than 10 MB)
@@ -90,7 +100,7 @@ COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
 # Add AWS Lambda Web Adapter as an extension (Variant B: keep scratch, run locally and on Lambda)
 # The adapter will run as a Lambda extension and forward HTTP events to your app listening on PORT.
-COPY --from=public.ecr.aws/awsguru/aws-lambda-adapter:0.8.4 /lambda-adapter /opt/extensions/lambda-adapter
+COPY --from=builder /app/lambda-adapter /opt/extensions/lambda-adapter
 
 COPY --from=builder /app/main .
 COPY --from=builder /app/open-api-3.yaml .
