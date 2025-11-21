@@ -2,7 +2,7 @@ CONTAINER_NAME=bremer-abfallkalender-api
 IMAGE_NAME=larmic/bremer-abfallkalender-api
 HERUKO_APP_NAME=bremer-abfallkalender-api
 VERSION_FILE=VERSION
-VERSION=`cat $(VERSION_FILE)`
+VERSION=local-build
 IMAGE_TAG=${VERSION}
 
 go-test:

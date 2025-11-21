@@ -88,8 +88,17 @@ WORKDIR /root/
 # see https://stackoverflow.com/questions/52969195/docker-container-running-golang-http-client-getting-error-certificate-signed-by
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
+# Add AWS Lambda Web Adapter as an extension (Variant B: keep scratch, run locally and on Lambda)
+# The adapter will run as a Lambda extension and forward HTTP events to your app listening on PORT.
+COPY --from=public.ecr.aws/awsguru/aws-lambda-adapter:0.8.4 /lambda-adapter /opt/extensions/lambda-adapter
+
 COPY --from=builder /app/main .
 COPY --from=builder /app/open-api-3.yaml .
 
 EXPOSE 8080
+# Environment variables for AWS Lambda Web Adapter
+# PORT must match the port your app listens on; keep 8080 for local runs too.
+ENV PORT=8080 \
+    RUST_LOG=info \
+    AWS_LWA_ENABLE_COMPRESSION=true
 ENTRYPOINT ["./main"]
