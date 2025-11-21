@@ -45,7 +45,7 @@ jobs:
           docker buildx inspect --bootstrap
 
       - name: Configure AWS credentials (OIDC)
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v5
         with:
           role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-actions-ecr-push
           aws-region: ${{ env.AWS_REGION }}
