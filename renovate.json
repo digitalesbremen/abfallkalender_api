@@ -18,5 +18,16 @@
       ],
       "automerge": true
     }
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "fileMatch": ["^Dockerfile$"],
+      "matchStrings": [
+        "COPY --from=public\\.ecr\\.aws\\/awsguru\\/aws-lambda-adapter:(?<currentValue>.*?) "
+      ],
+      "datasourceTemplate": "docker",
+      "depNameTemplate": "public.ecr.aws/awsguru/aws-lambda-adapter"
+    }
   ]
 }
