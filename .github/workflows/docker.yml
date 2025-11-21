@@ -7,6 +7,8 @@ on:
 
 env:
   IMAGE_NAME: larmic/abfallkalender_api
+  AWS_REGION: eu-central-1
+  ECR_REPO: abfallkalender-api
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -16,6 +18,9 @@ jobs:
   build:
     name: Build and push Docker image
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write   # für OIDC zu AWS
+      contents: read
 
     steps:
       - name: Check out code into the Go module directory
@@ -39,6 +44,28 @@ jobs:
           docker buildx create --driver docker-container --use
           docker buildx inspect --bootstrap
 
-      - name: build and push image
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-actions-ecr-push
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Compute ECR image URI
+        run: echo "ECR_IMAGE_URI=${{ steps.login-ecr.outputs.registry }}/${ECR_REPO}" >> $GITHUB_ENV
+
+      - name: build and push image to DockerHub
         run: |
           docker buildx build --platform=linux/amd64,linux/arm64,linux/arm --build-arg VERSION=$VERSION --pull --tag "$IMAGE_NAME:$VERSION" --tag "$IMAGE_NAME:latest" . --push
+
+      - name: build and push single-arch image to ECR (arm64 only, no latest)
+        run: |
+          docker buildx build \
+            --platform=linux/arm64 \
+            --build-arg VERSION=$VERSION \
+            --pull \
+            --tag "$ECR_IMAGE_URI:$VERSION" \
+            . --push

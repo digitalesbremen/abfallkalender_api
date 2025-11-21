@@ -17,6 +17,11 @@
         "digest"
       ],
       "automerge": true
+    },
+    {
+      "matchManagers": ["terraform"],
+      "matchDepTypes": ["provider"],
+      "automerge": true
     }
   ],
   "customManagers": [

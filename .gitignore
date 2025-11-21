@@ -19,3 +19,8 @@ bin/*
 node_modules/
 dist
 .parcel-cache
+
+# OpenTofu / Terraform
+.terraform/
+*.tfstate
+*.tfstate.backup
