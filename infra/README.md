@@ -57,7 +57,7 @@ Der Workflow .github/workflows/docker.yml ist so eingerichtet, dass bei jedem Gi
 Erforderliche Secrets/Settings im GitHub-Repository
 - DOCKER_USERNAME - Docker Hub Benutzername
 - DOCKER_PASSWORD - Docker Hub Passwort/Token
-- AWS_ACCOUNT_ID - deine AWS Account ID (z. B. 790702263842)
+- AWS_ACCOUNT_ID - deine AWS Account ID 
 
 GitHub Actions benoetigt keine AWS Access Keys; der Login erfolgt ueber OIDC und die Rolle github-actions-ecr-push.
 
