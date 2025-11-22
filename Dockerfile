@@ -27,7 +27,8 @@
 #
 #   # Build assets
 #   RUN npm run build
-
+FROM --platform=linux/arm64 public.ecr.aws/awsguru/aws-lambda-adapter:0.8.4 AS adapter-source-arm64
+FROM --platform=linux/amd64 public.ecr.aws/awsguru/aws-lambda-adapter:0.8.4 AS adapter-source-amd64
 
 # Step 2: create multi stage backend builder (about 800 MB)
 FROM golang:1.25 AS builder
@@ -62,33 +63,38 @@ RUN echo "I am running on $BUILDPLATFORM, building for $TARGETPLATFORM"
 ARG VERSION
 RUN sed -i "s/\${VERSION}/${VERSION}/" open-api-3.yaml
 
-# create dummy lamdba-adapter (not supported and required by linux/arm/v7 (raspberry,...)
-RUN touch lambda-adapter
-
 RUN if [ "$TARGETPLATFORM" = "linux/arm/v7" ] ; then \
         echo "I am building linux/arm/v7 with CGO_ENABLED=0 GOARCH=arm GOARM=7" ; \
         env CGO_ENABLED=0 GOARCH=arm GOARM=7 go build -a -o main . ; \
         echo "Build done" ; \
-        echo "I am skipping loading AWS lamdba-adapter, because not supported by platform" ; \
     fi
 
 RUN if [ "$TARGETPLATFORM" = "linux/arm64" ] ; then \
         echo "I am building linux/arm64 with CGO_ENABLED=0 GOARCH=arm64 GOARM=7" ; \
         env CGO_ENABLED=0 GOARCH=arm64 GOARM=7 go build -a -o main . ; \
         echo "Build done" ; \
-        echo "I am loading AWS lamdba-adapter" ; \
-        wget -O lambda-adapter https://github.com/awslabs/aws-lambda-web-adapter/releases/download/v0.9.1/lambda-adapter-aarch64 && chmod +x lambda-adapter; \
-        echo "Loading done" ; \
     fi
 
 RUN if [ "$TARGETPLATFORM" = "linux/amd64" ] ; then \
         echo "I am building linux/amd64 with CGO_ENABLED=0 GOARCH=amd64" ; \
         env CGO_ENABLED=0 GOARCH=amd64 go build -a -o main . ; \
         echo "Build done" ; \
-        echo "I am loading AWS lamdba-adapter" ; \
-        wget -O lambda-adapter https://github.com/awslabs/aws-lambda-web-adapter/releases/download/v0.9.1/lambda-adapter-x86_64 && chmod +x lambda-adapter; \
-        echo "Loading done" ; \
     fi
+
+COPY --from=adapter-source-arm64 /lambda-adapter /tmp/lambda-adapter-arm64
+COPY --from=adapter-source-amd64 /lambda-adapter /tmp/lambda-adapter-amd64
+
+RUN touch /app/lambda-adapter
+RUN if [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
+      echo "Selecting ARM64 adapter"; \
+      cp /tmp/lambda-adapter-arm64 /app/lambda-adapter; \
+    elif [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
+      echo "Selecting AMD64 adapter"; \
+      cp /tmp/lambda-adapter-amd64 /app/lambda-adapter; \
+    else \
+      echo "No adapter for $TARGETARCH (creating dummy)"; \
+    fi
+RUN chmod +x /app/lambda-adapter && ls -lh /app/lambda-adapter
 
 # Step 2: create minimal executable image (less than 10 MB)
 FROM scratch
