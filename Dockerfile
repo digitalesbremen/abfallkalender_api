@@ -27,8 +27,8 @@
 #
 #   # Build assets
 #   RUN npm run build
-FROM --platform=linux/arm64 public.ecr.aws/awsguru/aws-lambda-adapter:0.8.4 AS adapter-source-arm64
-FROM --platform=linux/amd64 public.ecr.aws/awsguru/aws-lambda-adapter:0.8.4 AS adapter-source-amd64
+FROM --platform=linux/arm64 public.ecr.aws/awsguru/aws-lambda-adapter:0.9.1 AS adapter-source-arm64
+FROM --platform=linux/amd64 public.ecr.aws/awsguru/aws-lambda-adapter:0.9.1 AS adapter-source-amd64
 
 # Step 2: create multi stage backend builder (about 800 MB)
 FROM golang:1.25 AS builder
