@@ -69,4 +69,7 @@ jobs:
             --build-arg VERSION=$VERSION \
             --pull \
             --tag "$ECR_IMAGE_URI:$VERSION" \
+            --provenance=false \
+            --sbom=false \
+            --output=type=registry,oci-mediatypes=false \
             . --push
