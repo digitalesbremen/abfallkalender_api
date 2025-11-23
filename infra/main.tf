@@ -208,7 +208,10 @@ resource "aws_lambda_function_url" "app_url" {
   cors {
     allow_credentials = false
     allow_headers     = ["*"]
-    allow_methods     = ["GET", "HEAD", "OPTIONS"]
+    # AWS Lambda Function URL CORS erlaubt keine "OPTIONS" als AllowMethod.
+    # Sie wird automatisch vom Service gehandhabt. Siehe Fehler:
+    # "Value '[GET, HEAD, OPTIONS]' at 'cors.allowMethods' ... length <= 6" ("OPTIONS" = 7)
+    allow_methods     = ["GET", "HEAD"]
     allow_origins     = ["*"]
     expose_headers    = []
     max_age           = 86400
