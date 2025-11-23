@@ -43,6 +43,9 @@ Variablen:
 - image_tag (erforderlich): Tag des ECR-Images
 - lambda_memory_mb (optional, Default 512)
 - lambda_timeout_s (optional, Default 15)
+- reserved_concurrency (optional, Default null): Reservierte gleichzeitige Ausführungen
+  - null (empfohlen): keine Reservierung setzen (vermeidet Quotenfehler)
+  - Zahl > 0: setzt eine feste Reservierung. Achtung: AWS verlangt, dass mindestens 10 unreserviert im Konto verbleiben.
 
 Beispiel:
 ```
@@ -127,6 +130,23 @@ Troubleshooting
 - AccessDeniedException beim Push aus CI: Pruefe, ob die Rolle github-actions-ecr-push existiert und der Trust auf dein Repo verweist (repo:digitalesbremen/abfallkalender_api:ref:refs/tags/*).
 - RepositoryNotFoundException: tofu apply wurde evtl. noch nicht ausgefuehrt. ECR Repository zuerst anlegen.
 - Falsche Region: Stelle sicher, dass ueberall eu-central-1 verwendet wird (Provider, AWS CLI, CI-Env AWS_REGION).
+
+Lambda-spezifisch:
+- Image nicht gefunden: Pruefe, ob der angegebene image_tag im ECR vorhanden ist (gleiches Konto/Region).
+- 5xx/Timeouts: Erhoehe `lambda_timeout_s` und/oder `lambda_memory_mb`. Logs unter /aws/lambda/abfallkalender-api pruefen.
+- CORS: Die Function URL ist mit offenem CORS fuer GET/HEAD/OPTIONS konfiguriert. Bedarfsgerecht anpassen.
+- Fehler bei Reserved Concurrency (InvalidParameterValueException: UnreservedConcurrentExecution): Setze keine Reservierung (Default) oder waehle einen kleineren Wert. Du kannst deine Kontolimits pruefen mit:
+  ```
+  aws lambda get-account-settings --query '{limits:AccountLimit,usage:AccountUsage}'
+  ```
+  Stelle sicher, dass nach deiner Reservierung mindestens 10 unreserviert verbleiben. Beispiel ohne Reservierung (empfohlen):
+  ```
+  tofu apply -var "image_tag=v1.2.3"
+  ```
+  Beispiel mit Reservierung (nur wenn Quote passt):
+  ```
+  tofu apply -var "image_tag=v1.2.3" -var "reserved_concurrency=5"
+  ```
 
 Lambda-spezifisch:
 - Image nicht gefunden: Pruefe, ob der angegebene image_tag im ECR vorhanden ist (gleiches Konto/Region).

@@ -31,6 +31,16 @@ variable "lambda_timeout_s" {
   description = "Timeout der Lambda-Funktion in Sekunden."
 }
 
+# Optional: Feste Reservierung von gleichzeitigen Ausführungen für diese Funktion.
+# Standard = null (keine Reservierung, volle Flexibilität; vermeidet Fehler, wenn die
+# Konto-/Region-Quote zu niedrig ist). Wenn gesetzt, muss genug Unreserved Concurrency
+# für das Konto verbleiben (AWS verlangt mindestens 10 unreserviert).
+variable "reserved_concurrency" {
+  type        = number
+  default     = null
+  description = "Optional: Reservierte gleichzeitige Ausführungen für die Lambda-Funktion (oder null für keine Reservierung)."
+}
+
 # ECR Repository (privat)
 resource "aws_ecr_repository" "repo" {
   name                  = "abfallkalender-api"
@@ -180,8 +190,9 @@ resource "aws_lambda_function" "app" {
   timeout       = var.lambda_timeout_s
   memory_size   = var.lambda_memory_mb
 
-  # Begrenzung auf 10 gleichzeitige Instanzen (Hard Cap für Kostenkontrolle)
-  reserved_concurrent_executions = 10
+  # Optionales Hard Cap für Kostenkontrolle – nur setzen, wenn explizit gewünscht.
+  # Bei null wird keine Reservierung gesetzt (empfohlen, um Quotenfehler zu vermeiden).
+  reserved_concurrent_executions = var.reserved_concurrency
 
   # Das Go-Binary (HTTP-Server) wird via AWS Lambda Web Adapter gestartet.
   # Kein handler/runtime nötig, da package_type = Image.
