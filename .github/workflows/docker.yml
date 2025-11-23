@@ -57,14 +57,24 @@ jobs:
       - name: Compute ECR image URI
         run: echo "ECR_IMAGE_URI=${{ steps.login-ecr.outputs.registry }}/${ECR_REPO}" >> $GITHUB_ENV
 
+      # TARGET: runner-standard (Clean image for DockerHub)
       - name: build and push image to DockerHub
         run: |
-          docker buildx build --platform=linux/amd64,linux/arm64,linux/arm --build-arg VERSION=$VERSION --pull --tag "$IMAGE_NAME:$VERSION" --tag "$IMAGE_NAME:latest" . --push
+          docker buildx build \
+            --target runner-standard \
+            --platform=linux/amd64,linux/arm64,linux/arm \
+            --build-arg VERSION=$VERSION \
+            --pull \
+            --tag "$IMAGE_NAME:$VERSION" \
+            --tag "$IMAGE_NAME:latest" \
+            . --push
 
+      # TARGET: runner-lambda (Image with Adapter for AWS ECR)
       - name: build and push single-arch image to ECR (arm64 only, no latest)
         run: |
           docker buildx build \
             --progress=plain \
+            --target runner-lambda \
             --platform=linux/arm64 \
             --build-arg VERSION=$VERSION \
             --pull \

@@ -27,10 +27,12 @@
 #
 #   # Build assets
 #   RUN npm run build
+
+# --- Pre-Stage: Fetch Adapters for different architectures ---
 FROM --platform=linux/arm64 public.ecr.aws/awsguru/aws-lambda-adapter:0.9.1 AS adapter-source-arm64
 FROM --platform=linux/amd64 public.ecr.aws/awsguru/aws-lambda-adapter:0.9.1 AS adapter-source-amd64
 
-# Step 2: create multi stage backend builder (about 800 MB)
+# --- Step 2: create multi stage backend builder (about 800 MB) ---
 FROM golang:1.25 AS builder
 LABEL stage=intermediate
 RUN go version
@@ -46,13 +48,9 @@ COPY src/backend /app/src/backend
 RUN go mod download
 RUN go mod tidy # prevent missing go.sum entry for module
 
-#RUN go test -v ./...
-
-# CGO_ENABLED=0   -> Disable interoperate with C libraries -> speed up build time! Enable it, if dependencies use C libraries!
-# GOOS=linux      -> compile to linux because scratch docker file is linux
-# GOARCH=amd64    -> because, hmm, everthing works fine with 64 bit :)
+# CGO_ENABLED=0   -> Disable interoperate with C libraries -> speed up build time!
 # -a              -> force rebuilding of packages that are already up-to-date.
-# -o app          -> force to build an executable app file (instead of default https://golang.org/cmd/go/#hdr-Compile_packages_and_dependencies)
+# -o app          -> force to build an executable app file
 
 ARG BUILDPLATFORM
 ARG TARGETPLATFORM
@@ -63,6 +61,7 @@ RUN echo "I am running on $BUILDPLATFORM, building for $TARGETPLATFORM"
 ARG VERSION
 RUN sed -i "s/\${VERSION}/${VERSION}/" open-api-3.yaml
 
+# Build Logic
 RUN if [ "$TARGETPLATFORM" = "linux/arm/v7" ] ; then \
         echo "I am building linux/arm/v7 with CGO_ENABLED=0 GOARCH=arm GOARM=7" ; \
         env CGO_ENABLED=0 GOARCH=arm GOARM=7 go build -a -o main . ; \
@@ -81,6 +80,8 @@ RUN if [ "$TARGETPLATFORM" = "linux/amd64" ] ; then \
         echo "Build done" ; \
     fi
 
+# --- Adapter Selection Logic in Builder Stage ---
+# We prepare the correct adapter here, so we can simply COPY it in the final stage
 COPY --from=adapter-source-arm64 /lambda-adapter /tmp/lambda-adapter-arm64
 COPY --from=adapter-source-amd64 /lambda-adapter /tmp/lambda-adapter-amd64
 
@@ -96,25 +97,46 @@ RUN if [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
     fi
 RUN chmod +x /app/lambda-adapter && ls -lh /app/lambda-adapter
 
-# Step 2: create minimal executable image (less than 10 MB)
-FROM scratch
+
+# --- Step 3: Base Runtime (Common for all targets) ---
+# create minimal executable image (less than 10 MB)
+FROM scratch AS runtime-base
 WORKDIR /root/
 
-# copy the ca-certificate.crt from the build stage (prevent x509 certificate signed by unknown authority)
-# see https://stackoverflow.com/questions/52969195/docker-container-running-golang-http-client-getting-error-certificate-signed-by
+# copy the ca-certificate.crt from the build stage
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
-# Add AWS Lambda Web Adapter as an extension (Variant B: keep scratch, run locally and on Lambda)
-# The adapter will run as a Lambda extension and forward HTTP events to your app listening on PORT.
-COPY --from=builder /app/lambda-adapter /opt/extensions/lambda-adapter
-
+# Copy app binary and config
 COPY --from=builder /app/main .
 COPY --from=builder /app/open-api-3.yaml .
 
+
+# --- Target 1: Standard Runner (K8s, Docker, Raspi) ---
+# This target DOES NOT include the adapter
+FROM runtime-base AS runner-standard
+LABEL org.opencontainers.image.title="Abfallkalender API (Standard)"
+LABEL org.opencontainers.image.description="Standard image for K8s, Docker or Raspberry Pi"
+LABEL org.opencontainers.image.variant="standard"
+
 EXPOSE 8080
+ENV PORT=8080
+ENTRYPOINT ["./main"]
+
+
+# --- Target 2: AWS Lambda Runner ---
+# This target INCLUDES the adapter
+FROM runtime-base AS runner-lambda
+LABEL org.opencontainers.image.title="Abfallkalender API (Lambda)"
+LABEL org.opencontainers.image.description="Optimized image for AWS Lambda execution"
+LABEL org.opencontainers.image.variant="lambda"
+
+# Add AWS Lambda Web Adapter as an extension
+COPY --from=builder /app/lambda-adapter /opt/extensions/lambda-adapter
+
 # Environment variables for AWS Lambda Web Adapter
-# PORT must match the port your app listens on; keep 8080 for local runs too.
+# PORT must match the port your app listens on
 ENV PORT=8080 \
     RUST_LOG=info \
     AWS_LWA_ENABLE_COMPRESSION=true
+
 ENTRYPOINT ["./main"]
