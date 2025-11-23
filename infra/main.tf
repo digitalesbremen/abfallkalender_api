@@ -180,6 +180,9 @@ resource "aws_lambda_function" "app" {
   timeout       = var.lambda_timeout_s
   memory_size   = var.lambda_memory_mb
 
+  # Begrenzung auf 10 gleichzeitige Instanzen (Hard Cap für Kostenkontrolle)
+  reserved_concurrent_executions = 10
+
   # Das Go-Binary (HTTP-Server) wird via AWS Lambda Web Adapter gestartet.
   # Kein handler/runtime nötig, da package_type = Image.
 
