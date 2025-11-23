@@ -64,6 +64,7 @@ jobs:
       - name: build and push single-arch image to ECR (arm64 only, no latest)
         run: |
           docker buildx build \
+            --progress=plain \
             --platform=linux/arm64 \
             --build-arg VERSION=$VERSION \
             --pull \

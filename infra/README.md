@@ -15,10 +15,13 @@ Enthaltene Ressourcen
 - Lifecycle Policy: behaelt die letzten 20 Images
 - GitHub OIDC Provider (falls nicht bereits vorhanden)
 - IAM Rolle github-actions-ecr-push mit minimalen ECR-Push-Rechten
+- Lambda-Ausführung: IAM-Rolle, LogGroup, Lambda-Funktion aus Container-Image, Function URL (öffentlich), EventBridge-Warmup
 
 Ausgaben (tofu apply)
 - ecr_repository_url - vollstaendige ECR URL
 - github_actions_role_arn - ARN der Rolle fuer GitHub Actions
+- lambda_function_name - Name der Lambda-Funktion
+- lambda_function_url - Oeffentliche URL der Funktion (direkt nutzbar)
 
 Erste Schritte
 ```
@@ -32,6 +35,30 @@ tofu plan
 # 3) Anwenden
 tofu apply
 ```
+
+Lambda aus Container-Image bereitstellen
+Voraussetzung: Es existiert bereits ein Image im ECR mit dem gewuenschten Tag (wird normalerweise durch den CI-Workflow beim Taggen eines Releases gepusht, z. B. v1.2.3). Die Lambda-Funktion zieht genau dieses Image.
+
+Variablen:
+- image_tag (erforderlich): Tag des ECR-Images
+- lambda_memory_mb (optional, Default 512)
+- lambda_timeout_s (optional, Default 15)
+
+Beispiel:
+```
+cd infra
+tofu apply -var "image_tag=v1.2.3"
+
+# Ausgabe enthaelt u. a. die URL
+# lambda_function_url = https://xxxxxxxxxxxxxxxx.lambda-url.eu-central-1.on.aws/
+```
+
+Testaufruf:
+```
+curl -i $(tofu output -raw lambda_function_url)
+```
+
+Warmup: Ein EventBridge Schedule ruft die Funktion alle 5 Minuten auf, um Kaltstarts zu reduzieren.
 
 Hinweis: OIDC Provider bereits vorhanden?
 Wenn in deinem AWS Account der GitHub OIDC Provider schon existiert, kann tofu apply mit einem Konflikt fehlschlagen. In dem Fall importiere den bestehenden Provider vor dem Apply:
@@ -60,6 +87,9 @@ Erforderliche Secrets/Settings im GitHub-Repository
 - AWS_ACCOUNT_ID - deine AWS Account ID 
 
 GitHub Actions benoetigt keine AWS Access Keys; der Login erfolgt ueber OIDC und die Rolle github-actions-ecr-push.
+
+Hinweis zu Images/Architekturen
+Das Dockerfile baut Images fuer linux/arm64 und linux/amd64; die Lambda-Konfiguration verwendet die Architektur arm64. Stelle sicher, dass fuer den gewaehlten Tag ein arm64-Image im ECR liegt (der CI-Workflow pusht ein einzelnes ARM64-Image ins ECR).
 
 Manuell: Image ins ECR pushen (optional)
 Falls du nicht auf die CI warten moechtest, kannst du lokal ein einzelnes ARM64-Image bauen und pushen:
@@ -98,6 +128,11 @@ Troubleshooting
 - RepositoryNotFoundException: tofu apply wurde evtl. noch nicht ausgefuehrt. ECR Repository zuerst anlegen.
 - Falsche Region: Stelle sicher, dass ueberall eu-central-1 verwendet wird (Provider, AWS CLI, CI-Env AWS_REGION).
 
+Lambda-spezifisch:
+- Image nicht gefunden: Pruefe, ob der angegebene image_tag im ECR vorhanden ist (gleiches Konto/Region).
+- 5xx/Timeouts: Erhoehe `lambda_timeout_s` und/oder `lambda_memory_mb`. Logs unter /aws/lambda/abfallkalender-api pruefen.
+- CORS: Die Function URL ist mit offenem CORS fuer GET/HEAD/OPTIONS konfiguriert. Bedarfsgerecht anpassen.
+
 Naechste Schritte (spaeter)
-- Lambda-Funktion aus Container-Image (nachdem mindestens ein Image im ECR liegt)
 - Optionale Begrenzung der Kostenrisiken via Reserved Concurrency / API Gateway / WAF
+- Hartere Absicherung der Function URL (z. B. IAM/Function URL Auth, CloudFront vorlagern, WAF)
