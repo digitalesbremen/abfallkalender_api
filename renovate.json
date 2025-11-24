@@ -28,17 +28,5 @@
       "automerge": true
     }
   ],
-  "customManagers": [
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "/^Dockerfile$/"
-      ],
-      "matchStrings": [
-        "https:\\/\\/github\\.com\\/awslabs\\/aws-lambda-web-adapter\\/releases\\/download\\/v(?<currentValue>.*?)\\/"
-      ],
-      "datasourceTemplate": "github-releases",
-      "depNameTemplate": "awslabs/aws-lambda-web-adapter"
-    }
-  ]
+  "customManagers": []
 }

@@ -11,10 +11,19 @@ info:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0
 
+servers:
+  - url: http://localhost:8080
+    description: Local Development Server
+  - url: https://b2k7lergfyvh7o6vi4q2pfs5ti0msdnh.lambda-url.eu-central-1.on.aws/
+    description: Production Server
+
 paths:
   /:
     get:
+      tags:
+        - Meta
       summary: Get Open API specification
+      operationId: getRootSpec
       description: Returns the OpenAPI specification in YAML format
       responses:
         '200':
@@ -25,7 +34,10 @@ paths:
                 type: string
   /abfallkalender-api:
     get:
+      tags:
+        - Meta
       summary: Get Open API specification
+      operationId: getApiSpec
       description: Returns the OpenAPI specification in YAML format
       responses:
         '200':
@@ -36,7 +48,10 @@ paths:
                 type: string
   /abfallkalender-api/streets:
     get:
+      tags:
+        - Streets
       summary: Get all streets of Bremen
+      operationId: getAllStreets
       description: Returns a list of all streets in Bremen
       responses:
         '200':
@@ -66,15 +81,13 @@ paths:
                 message: "Internal Server Error"
   /abfallkalender-api/street/{street}:
     get:
+      tags:
+        - Streets
       summary: Get specific street incl. house numbers in Bremen
+      operationId: getStreetDetails
       description: Returns details of a specific street including all house numbers
       parameters:
-        - name: street
-          in: path
-          required: true
-          description: Name of the street
-          schema:
-            type: string
+        - $ref: '#/components/parameters/StreetParam'
       responses:
         '200':
           description: A street with all existing house numbers in Bremen
@@ -120,21 +133,14 @@ paths:
                 message: "Internal Server Error"
   /abfallkalender-api/street/{street}/number/{number}:
     get:
+      tags:
+        - Calendar
       summary: Get calendar file for specific address
+      operationId: getCalendarFile
       description: Returns a calendar file (ICS or CSV) for a specific address
       parameters:
-        - name: street
-          in: path
-          required: true
-          description: Name of the street
-          schema:
-            type: string
-        - name: number
-          in: path
-          required: true
-          description: House number
-          schema:
-            type: string
+        - $ref: '#/components/parameters/StreetParam'
+        - $ref: '#/components/parameters/NumberParam'
       responses:
         '200':
           description: Calendar file for the specified address, or an HTML preview when requested by browsers
@@ -171,21 +177,14 @@ paths:
                 message: "Internal Server Error"
   /abfallkalender-api/street/{street}/number/{number}/next:
     get:
+      tags:
+        - Calendar
       summary: Get garbage types of next collection date
+      operationId: getNextCollection
       description: Returns the garbage types for the next collection date at a specific address
       parameters:
-        - name: street
-          in: path
-          required: true
-          description: Name of the street
-          schema:
-            type: string
-        - name: number
-          in: path
-          required: true
-          description: House number
-          schema:
-            type: string
+        - $ref: '#/components/parameters/StreetParam'
+        - $ref: '#/components/parameters/NumberParam'
       responses:
         '200':
           description: Next collection date and garbage types
@@ -216,7 +215,10 @@ paths:
                 message: "Internal Server Error"
   /metrics:
     get:
+      tags:
+        - Meta
       summary: Get Prometheus metrics
+      operationId: getMetrics
       description: Exposes Prometheus metrics for monitoring the application
       responses:
         '200':
@@ -227,6 +229,21 @@ paths:
                 type: string
 
 components:
+  parameters:
+    StreetParam:
+      name: street
+      in: path
+      required: true
+      description: Name of the street
+      schema:
+        type: string
+    NumberParam:
+      name: number
+      in: path
+      required: true
+      description: House number
+      schema:
+        type: string
   schemas:
     Next:
       type: object

@@ -55,7 +55,37 @@ func (c Controller) GetCalendar(w http.ResponseWriter, r *http.Request) {
 		// Simple HTML page that shows the ICS content inline to avoid a download experience in browsers
 		// Note: We intentionally do NOT offer content negotiation here; this is a preview only.
 		// If a client needs the raw ICS/CSV, it should set the appropriate Accept header.
-		html := `<!doctype html><html lang="de"><head><meta charset="utf-8"><title>Abfallkalender – ` +
+		baseCalURL := buildHouseNumberUrl(r, streetName, houseNumber)
+		// Build a webcal:// URL so users can subscribe in calendar apps directly.
+		// Most OS/browser combinations hand off webcal:// links to the default calendar application.
+		// We derive it from the absolute ICS URL by switching the scheme to "webcal".
+		if u, perr := url.Parse(baseCalURL); perr == nil {
+			u.Scheme = "webcal"
+			baseCalURLWebcal := u.String()
+			html := `<!doctype html><html lang="de"><head><meta charset="utf-8"><title>Abfallkalender – ` +
+				html.EscapeString(streetName) + ` ` + html.EscapeString(houseNumber) + `</title>
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <style>body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;margin:1.5rem;}
+            pre{background:#f6f8fa;padding:1rem;overflow:auto;border-radius:6px;border:1px solid #e1e4e8;}
+            a{color:#0366d6;text-decoration:none}a:hover{text-decoration:underline}
+            .links{margin:0 0 1rem 0}
+            .btn{display:inline-block;margin-left:1rem;padding:0.4rem 0.6rem;border:1px solid #0366d6;border-radius:4px}
+            </style></head><body>
+            <h1>Abfallkalender – ` + html.EscapeString(streetName) + ` ` + html.EscapeString(houseNumber) + `</h1>
+            <div class="links">
+              <a href="` + baseCalURL + `/next">Nächste Abholung (JSON)</a>
+              <a class="btn" href="` + baseCalURLWebcal + `">In Kalender abonnieren (ICS)</a>
+            </div>
+            <p>Vorschau der ICS-Inhalte (nur Anzeige, kein Download):</p>
+            <pre>` + html.EscapeString(string(ics)) + `</pre>
+            </body></html>`
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(html))
+			return
+		}
+		// Fallback: if URL parsing failed for some reason, render without the subscribe button
+		htmlStr := `<!doctype html><html lang="de"><head><meta charset="utf-8"><title>Abfallkalender – ` +
 			html.EscapeString(streetName) + ` ` + html.EscapeString(houseNumber) + `</title>
             <meta name="viewport" content="width=device-width, initial-scale=1">
             <style>body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;margin:1.5rem;}
@@ -65,15 +95,14 @@ func (c Controller) GetCalendar(w http.ResponseWriter, r *http.Request) {
             </style></head><body>
             <h1>Abfallkalender – ` + html.EscapeString(streetName) + ` ` + html.EscapeString(houseNumber) + `</h1>
             <div class="links">
-              <a href="` + buildHouseNumberUrl(r, streetName, houseNumber) + `/next">Nächste Abholung (JSON)</a>
+              <a href="` + baseCalURL + `/next">Nächste Abholung (JSON)</a>
             </div>
             <p>Vorschau der ICS-Inhalte (nur Anzeige, kein Download):</p>
             <pre>` + html.EscapeString(string(ics)) + `</pre>
             </body></html>`
-
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte(html))
+		_, _ = w.Write([]byte(htmlStr))
 		return
 	case NONE:
 		// No Accept header → keep legacy default (ICS) for CLI/cURL compatibility
