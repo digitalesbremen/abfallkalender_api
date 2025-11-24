@@ -1,57 +1,21 @@
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 6.0"
-    }
-  }
-}
+##
+## Infrastructure main file (resources/data/locals only)
+##
+## This file intentionally contains only resources, data sources and locals.
+## Version and provider constraints live in versions.tf, variables in variables.tf,
+## and outputs in outputs.tf.
 
-provider "aws" {
-  region = "eu-central-1"
-}
-
-# -------------
-# Variablen
-# -------------
-variable "image_tag" {
-  type        = string
-  description = "Tag des ECR-Images für die Lambda-Funktion (muss bereits im ECR existieren)."
-}
-
-variable "lambda_memory_mb" {
-  type        = number
-  default     = 512
-  description = "Arbeitsspeicher der Lambda-Funktion in MB."
-}
-
-variable "lambda_timeout_s" {
-  type        = number
-  default     = 15
-  description = "Timeout der Lambda-Funktion in Sekunden."
-}
-
-# Optional: Feste Reservierung von gleichzeitigen Ausführungen für diese Funktion.
-# Standard = null (keine Reservierung, volle Flexibilität; vermeidet Fehler, wenn die
-# Konto-/Region-Quote zu niedrig ist). Wenn gesetzt, muss genug Unreserved Concurrency
-# für das Konto verbleiben (AWS verlangt mindestens 10 unreserviert).
-variable "reserved_concurrency" {
-  type        = number
-  default     = null
-  description = "Optional: Reservierte gleichzeitige Ausführungen für die Lambda-Funktion (oder null für keine Reservierung)."
-}
-
-# ECR Repository (privat)
+# ECR repository (private)
 resource "aws_ecr_repository" "repo" {
   name                  = "abfallkalender-api"
   image_tag_mutability  = "MUTABLE"
-  force_delete          = true # Achtung: löscht Repo auch mit Images (praktisch für Dev/Test)
+  force_delete          = true # Caution: also deletes the repo when images exist (useful for dev/test)
   image_scanning_configuration {
     scan_on_push = true
   }
 }
 
-# ECR Lifecycle Policy – halte nur die letzten 20 Images (alle Tags)
+# ECR lifecycle policy – keep only the last 20 images (all tags)
 resource "aws_ecr_lifecycle_policy" "policy" {
   repository = aws_ecr_repository.repo.name
   policy     = jsonencode({
@@ -70,15 +34,15 @@ resource "aws_ecr_lifecycle_policy" "policy" {
   })
 }
 
-# GitHub OIDC Provider (für GitHub Actions ohne Langzeit-Keys)
-# Hinweis: Falls bereits im Account vorhanden, ggf. importieren:
+# GitHub OIDC provider (for GitHub Actions without long-lived keys)
+# Note: If it already exists in the account, import it into state first:
 #   tofu import aws_iam_openid_connect_provider.github arn:aws:iam::<ACCOUNT_ID>:oidc-provider/token.actions.githubusercontent.com
 resource "aws_iam_openid_connect_provider" "github" {
   url = "https://token.actions.githubusercontent.com"
   client_id_list = [
     "sts.amazonaws.com"
   ]
-  # GitHub OIDC Root CA Thumbprint laut GitHub-Dokumentation
+  # GitHub OIDC root CA thumbprints as per GitHub documentation
   thumbprint_list = [
     "6938fd4d98bab03faadb97b34396831e3780aea1", # DigiCert Global Root CA
     "1c58a3a8518e8759bf075b76b750d4f2df264fcd"  # DigiCert Global Root G2
@@ -87,7 +51,7 @@ resource "aws_iam_openid_connect_provider" "github" {
 
 data "aws_caller_identity" "current" {}
 
-# IAM Rolle, die GitHub Actions (nur für Tags in diesem Repo) annehmen darf
+# IAM role that GitHub Actions (only tag refs in this repo) may assume
 resource "aws_iam_role" "github_actions_ecr_push" {
   name = "github-actions-ecr-push"
   assume_role_policy = jsonencode({
@@ -104,7 +68,7 @@ resource "aws_iam_role" "github_actions_ecr_push" {
             "token.actions.githubusercontent.com:aud" : "sts.amazonaws.com"
           },
           StringLike = {
-            # Erlaube nur das aktuelle Repo und Tag-Refs
+            # Allow only this repo and tag refs
             "token.actions.githubusercontent.com:sub" : "repo:digitalesbremen/abfallkalender_api:ref:refs/tags/*"
           }
         }
@@ -113,7 +77,7 @@ resource "aws_iam_role" "github_actions_ecr_push" {
   })
 }
 
-# Minimale Berechtigungen für ECR Push
+# Minimal permissions for ECR push
 resource "aws_iam_policy" "ecr_push" {
   name        = "GitHubActionsECRPush"
   description = "Minimal permissions for pushing images to ECR"
@@ -145,10 +109,10 @@ resource "aws_iam_role_policy_attachment" "attach_ecr_push" {
 }
 
 # ------------------------------------------------------------
-# Lambda: IAM Ausführungsrolle, LogGroup, Funktion, Function URL
+# Lambda: execution role, log group, function, function URL
 # ------------------------------------------------------------
 
-# IAM Rolle für Lambda-Ausführung (Logs etc.)
+# IAM role for Lambda execution (logs, etc.)
 resource "aws_iam_role" "lambda_exec" {
   name = "abfallkalender-api-lambda-exec"
   assume_role_policy = jsonencode({
@@ -163,7 +127,7 @@ resource "aws_iam_role" "lambda_exec" {
   })
 }
 
-# Standard Logging Rechte
+# Attach basic logging permissions
 resource "aws_iam_role_policy_attachment" "lambda_basic_logs" {
   role       = aws_iam_role.lambda_exec.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
@@ -173,13 +137,13 @@ locals {
   image_uri = "${aws_ecr_repository.repo.repository_url}:${var.image_tag}"
 }
 
-# Optionale explizite Log Group (ermöglicht Retention-Steuerung)
+# Optional explicit log group (to control retention)
 resource "aws_cloudwatch_log_group" "lambda" {
   name              = "/aws/lambda/abfallkalender-api"
   retention_in_days = 14
 }
 
-# Lambda-Funktion aus Container-Image (mit AWS Lambda Web Adapter im Image enthalten)
+# Lambda function from container image (AWS Lambda Web Adapter included in the image)
 resource "aws_lambda_function" "app" {
   function_name = "abfallkalender-api"
   role          = aws_iam_role.lambda_exec.arn
@@ -190,26 +154,26 @@ resource "aws_lambda_function" "app" {
   timeout       = var.lambda_timeout_s
   memory_size   = var.lambda_memory_mb
 
-  # Optionales Hard Cap für Kostenkontrolle – nur setzen, wenn explizit gewünscht.
-  # Bei null wird keine Reservierung gesetzt (empfohlen, um Quotenfehler zu vermeiden).
+  # Optional hard cap for cost control – only set if explicitly desired.
+  # When null, no reservation is set (recommended to avoid account quota issues).
   reserved_concurrent_executions = var.reserved_concurrency
 
-  # Das Go-Binary (HTTP-Server) wird via AWS Lambda Web Adapter gestartet.
-  # Kein handler/runtime nötig, da package_type = Image.
+  # The Go binary (HTTP server) is started via AWS Lambda Web Adapter.
+  # No handler/runtime needed because package_type = Image.
 
   depends_on = [aws_cloudwatch_log_group.lambda]
 }
 
-# Öffentliche URL direkt an der Funktion (ohne API Gateway)
+# Public Function URL (no API Gateway)
 resource "aws_lambda_function_url" "app_url" {
   function_name      = aws_lambda_function.app.function_name
-  authorization_type = "NONE" # öffentlich; ggf. später absichern
+  authorization_type = "NONE" # public; tighten later if needed
 
   cors {
     allow_credentials = false
     allow_headers     = ["*"]
-    # AWS Lambda Function URL CORS erlaubt keine "OPTIONS" als AllowMethod.
-    # Sie wird automatisch vom Service gehandhabt. Siehe Fehler:
+    # AWS Lambda Function URL CORS does not allow "OPTIONS" in allow_methods.
+    # It is handled automatically by the service. Otherwise you get:
     # "Value '[GET, HEAD, OPTIONS]' at 'cors.allowMethods' ... length <= 6" ("OPTIONS" = 7)
     allow_methods     = ["GET", "HEAD"]
     allow_origins     = ["*"]
@@ -223,7 +187,7 @@ resource "aws_lambda_function_url" "app_url" {
 # --------------------
 resource "aws_cloudwatch_event_rule" "warmup" {
   name                = "abfallkalender-api-warmup"
-  description         = "Periodisches Warmup der Lambda-Funktion"
+  description         = "Periodic warmup of the Lambda function"
   schedule_expression = "rate(5 minutes)"
 }
 
@@ -237,27 +201,11 @@ resource "aws_cloudwatch_event_target" "warmup_target" {
   })
 }
 
-# Berechtigung, damit EventBridge die Lambda-Funktion aufrufen darf
+# Permission so EventBridge can invoke the Lambda function
 resource "aws_lambda_permission" "allow_events_warmup" {
   statement_id  = "AllowExecutionFromEventBridgeWarmup"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.app.function_name
   principal     = "events.amazonaws.com"
   source_arn    = aws_cloudwatch_event_rule.warmup.arn
-}
-
-output "ecr_repository_url" {
-  value = aws_ecr_repository.repo.repository_url
-}
-
-output "github_actions_role_arn" {
-  value = aws_iam_role.github_actions_ecr_push.arn
-}
-
-output "lambda_function_name" {
-  value = aws_lambda_function.app.function_name
-}
-
-output "lambda_function_url" {
-  value = aws_lambda_function_url.app_url.function_url
 }

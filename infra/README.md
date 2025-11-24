@@ -1,5 +1,24 @@
 OpenTofu - AWS ECR und GitHub Actions
 
+English quick start and file layout
+
+- Tooling: This stack is managed with OpenTofu (tofu). The configuration is compatible with Terraform as well.
+- File layout:
+  - versions.tf — Terraform/OpenTofu and AWS provider constraints (region, provider version)
+  - variables.tf — all input variables for the stack
+  - main.tf — resources, data sources and locals only (ECR, IAM/OIDC, Lambda, EventBridge)
+  - outputs.tf — outputs printed after apply
+- Typical workflow:
+  - tofu init — download providers and initialize the working directory
+  - tofu plan — preview changes
+  - tofu apply — apply changes
+
+Notes for newcomers to OpenTofu
+
+- OpenTofu is a community-driven fork of Terraform. Command names and HCL language are the same; you can use tofu in place of terraform.
+- State is stored locally by default in this folder (terraform.tfstate). For teams/CI, consider a remote backend (e.g. S3 + DynamoDB).
+- Provider versions are pinned in versions.tf for reproducibility. Update carefully to avoid breaking changes.
+
 Dieses Verzeichnis enthaelt die OpenTofu-Konfiguration, um ein privates Amazon ECR Repository sowie die IAM/OIDC Anbindung fuer GitHub Actions bereitzustellen. Zusaetzlich ist der CI-Workflow so eingerichtet, dass bei neuen Git-Tags ein Docker-Image nach Docker Hub (multi-arch) und ein einzelnes ARM64-Image nach ECR gepusht wird.
 
 Voraussetzungen
