@@ -15,11 +15,10 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
-    name: Build and push Docker image
+  dockerhub:
+    name: Build and push DockerHub image
     runs-on: ubuntu-latest
     permissions:
-      id-token: write   # für OIDC zu AWS
       contents: read
 
     steps:
@@ -44,6 +43,41 @@ jobs:
           docker buildx create --driver docker-container --use
           docker buildx inspect --bootstrap
 
+      # TARGET: runner-standard (Clean image for DockerHub)
+      - name: build and push image to DockerHub
+        run: |
+          docker buildx build \
+            --target runner-standard \
+            --platform=linux/amd64,linux/arm64,linux/arm \
+            --build-arg VERSION=$VERSION \
+            --pull \
+            --tag "$IMAGE_NAME:$VERSION" \
+            --tag "$IMAGE_NAME:latest" \
+            . --push
+
+  ecr:
+    name: Build and push AWS ECR image
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write   # für OIDC zu AWS
+      contents: read
+
+    steps:
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v6
+
+      - name: Set up version from git tag
+        run: echo "VERSION=${GITHUB_REF_NAME}" >> $GITHUB_ENV
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: prepare buildx
+        run: |
+          # Use docker-container driver to allow useful features (push/multi-platform)
+          docker buildx create --driver docker-container --use
+          docker buildx inspect --bootstrap
+
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v5
         with:
@@ -56,18 +90,6 @@ jobs:
 
       - name: Compute ECR image URI
         run: echo "ECR_IMAGE_URI=${{ steps.login-ecr.outputs.registry }}/${ECR_REPO}" >> $GITHUB_ENV
-
-      # TARGET: runner-standard (Clean image for DockerHub)
-      - name: build and push image to DockerHub
-        run: |
-          docker buildx build \
-            --target runner-standard \
-            --platform=linux/amd64,linux/arm64,linux/arm \
-            --build-arg VERSION=$VERSION \
-            --pull \
-            --tag "$IMAGE_NAME:$VERSION" \
-            --tag "$IMAGE_NAME:latest" \
-            . --push
 
       # TARGET: runner-lambda (Image with Adapter for AWS ECR)
       - name: build and push single-arch image to ECR (arm64 only, no latest)
