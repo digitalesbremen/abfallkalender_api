@@ -41,6 +41,9 @@ func (c Controller) GetCalendar(w http.ResponseWriter, r *http.Request) {
 			c.createInternalServerError(w, err)
 			return
 		}
+		if cacheStatus := c.Client.GetLastCacheStatus(); cacheStatus != "" {
+			w.Header().Set("X-Cache", cacheStatus)
+		}
 		w.Header().Set("Content-Type", contentType)
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write(response)
@@ -79,6 +82,9 @@ func (c Controller) GetCalendar(w http.ResponseWriter, r *http.Request) {
             <p>Vorschau der ICS-Inhalte (nur Anzeige, kein Download):</p>
             <pre>` + html.EscapeString(string(ics)) + `</pre>
             </body></html>`
+			if cacheStatus := c.Client.GetLastCacheStatus(); cacheStatus != "" {
+				w.Header().Set("X-Cache", cacheStatus)
+			}
 			w.Header().Set("Content-Type", "text/html; charset=utf-8")
 			w.WriteHeader(http.StatusOK)
 			_, _ = w.Write([]byte(html))
@@ -100,6 +106,9 @@ func (c Controller) GetCalendar(w http.ResponseWriter, r *http.Request) {
             <p>Vorschau der ICS-Inhalte (nur Anzeige, kein Download):</p>
             <pre>` + html.EscapeString(string(ics)) + `</pre>
             </body></html>`
+		if cacheStatus := c.Client.GetLastCacheStatus(); cacheStatus != "" {
+			w.Header().Set("X-Cache", cacheStatus)
+		}
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(htmlStr))
@@ -110,6 +119,9 @@ func (c Controller) GetCalendar(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			c.createInternalServerError(w, err)
 			return
+		}
+		if cacheStatus := c.Client.GetLastCacheStatus(); cacheStatus != "" {
+			w.Header().Set("X-Cache", cacheStatus)
 		}
 		w.Header().Set("Content-Type", "text/calendar; charset=utf-8")
 		w.WriteHeader(http.StatusOK)

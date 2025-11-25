@@ -13,6 +13,7 @@ type ClientMock struct {
 	getCSVError          error
 	ics                  []byte
 	csv                  []byte
+	cacheStatus          string
 }
 
 var controller = Controller{}
@@ -72,4 +73,8 @@ func (mt *ClientMock) GetCSV(_ string, _ string, _ string) ([]byte, error) {
 	}
 
 	return mt.csv, nil
+}
+
+func (mt *ClientMock) GetLastCacheStatus() string {
+	return mt.cacheStatus
 }

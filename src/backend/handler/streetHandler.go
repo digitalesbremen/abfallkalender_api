@@ -17,6 +17,7 @@ type ClientCaller interface {
 	GetStreets(redirectUrl string) (response client.Streets, err error)
 	GetICS(redirectUrl string, streetName string, houseNumber string) (response []byte, err error)
 	GetCSV(redirectUrl string, streetName string, houseNumber string) (response []byte, err error)
+	GetLastCacheStatus() string
 }
 
 type Controller struct {
@@ -78,6 +79,10 @@ func (c Controller) GetStreet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Propagate cache status from last client call (if available)
+	if cacheStatus := c.Client.GetLastCacheStatus(); cacheStatus != "" {
+		w.Header().Set("X-Cache", cacheStatus)
+	}
 	// Set headers before writing status/body to ensure clients detect UTF-8 correctly
 	w.Header().Set("Content-Type", "application/hal+json; charset=utf-8")
 	w.WriteHeader(http.StatusOK)

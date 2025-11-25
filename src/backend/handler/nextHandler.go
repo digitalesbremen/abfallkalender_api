@@ -39,6 +39,10 @@ func (c Controller) GetNext(w http.ResponseWriter, r *http.Request) {
 		Types: garbageTypes,
 	}
 
+	// Propagate cache status from last client call (if available)
+	if cacheStatus := c.Client.GetLastCacheStatus(); cacheStatus != "" {
+		w.Header().Set("X-Cache", cacheStatus)
+	}
 	// JSON response with proper content type and UTF-8 charset
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(http.StatusOK)

@@ -19,10 +19,12 @@ func Logger(inner http.Handler, name string, kalenderJS string, kalenderJSMap st
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 
-		log.Printf("%s\t%s\t%s\t(in progress)", r.Method, r.RequestURI, name)
-
 		inner.ServeHTTP(w, r)
 
-		log.Printf("%s\t%s\t%s\ttakes %s", r.Method, r.RequestURI, name, time.Since(start))
+		cacheStatus := w.Header().Get("X-Cache")
+		if cacheStatus == "" {
+			cacheStatus = "-"
+		}
+		log.Printf("%s\t%s\t%s\ttakes %s\tcache=%s", r.Method, r.RequestURI, name, time.Since(start), cacheStatus)
 	})
 }

@@ -41,6 +41,10 @@ func (c Controller) GetStreets(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Propagate cache status from last client call (if available)
+	if cacheStatus := c.Client.GetLastCacheStatus(); cacheStatus != "" {
+		w.Header().Set("X-Cache", cacheStatus)
+	}
 	// Set headers before writing status/body to ensure clients detect UTF-8 correctly
 	w.Header().Set("Content-Type", "application/hal+json; charset=utf-8")
 	w.WriteHeader(http.StatusOK)

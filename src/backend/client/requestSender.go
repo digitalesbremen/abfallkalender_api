@@ -51,6 +51,7 @@ func (c *Client) sendRequest(originalRequest *http.Request, autoCloseBody bool) 
 					// Minimal fields required by callers
 				}
 				resp.Header.Set("X-Cache", "HIT")
+				c.setLastCacheStatus("HIT")
 				if autoCloseBody {
 					defer func(Body io.ReadCloser) { _ = Body.Close() }(resp.Body)
 				}
@@ -110,6 +111,7 @@ func (c *Client) sendRequest(originalRequest *http.Request, autoCloseBody bool) 
 			Body:       io.NopCloser(bytes.NewReader(cr.Body)),
 		}
 		resp.Header.Set("X-Cache", "MISS")
+		c.setLastCacheStatus("MISS")
 		if autoCloseBody {
 			defer func(Body io.ReadCloser) { _ = Body.Close() }(resp.Body)
 		}
@@ -117,5 +119,6 @@ func (c *Client) sendRequest(originalRequest *http.Request, autoCloseBody bool) 
 	}
 
 	// Non-cacheable success: return as-is
+	c.setLastCacheStatus("")
 	return res, nil
 }
