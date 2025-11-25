@@ -14,7 +14,7 @@ info:
 servers:
   - url: http://localhost:8080
     description: Local Development Server
-  - url: https://b2k7lergfyvh7o6vi4q2pfs5ti0msdnh.lambda-url.eu-central-1.on.aws/
+  - url: https://yzznmy2atbcsyyl7xhkb2tn7ai0htcwq.lambda-url.eu-central-1.on.aws/
     description: Production Server
 
 paths:
