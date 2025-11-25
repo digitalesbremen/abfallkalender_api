@@ -13,6 +13,11 @@ output "github_actions_role_arn" {
   value       = aws_iam_role.github_actions_ecr_push.arn
 }
 
+output "github_actions_apply_role_arn" {
+  description = "ARN of the IAM role assumed by GitHub Actions to run OpenTofu apply."
+  value       = aws_iam_role.github_actions_terraform_apply.arn
+}
+
 output "lambda_function_name" {
   description = "Name of the deployed Lambda function."
   value       = aws_lambda_function.app.function_name
