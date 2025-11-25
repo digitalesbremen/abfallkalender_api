@@ -4,12 +4,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/gorilla/mux"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"testing"
+
+	"github.com/gorilla/mux"
 )
 
 func TestGetStreetHappyPath(t *testing.T) {
@@ -31,7 +32,7 @@ func TestGetStreetHappyPath(t *testing.T) {
 	if dto.Name != streetName {
 		t.Errorf("expected street %s got %s", streetName, dto.Name)
 	}
-	if dto.Links.Self.Href != "https://www.mock.com/abfallkalender-api/street/Aachener+Stra%C3%9Fe" {
+	if dto.Links.Self.Href != "http://www.mock.com/abfallkalender-api/street/Aachener+Stra%C3%9Fe" {
 		t.Errorf("expected self link %s got %s", "https://www.mock.com/abfallkalender-api/street/Aachener+Stra%C3%9Fe", dto.Links.Self.Href)
 	}
 
@@ -143,7 +144,7 @@ func (dto streetWithHouseNumbersDto) verifyStreet(t *testing.T, street string) {
 		t.Errorf("expected street %s got %s", street, dto.Name)
 	}
 
-	expected := fmt.Sprintf("https://www.mock.com/abfallkalender-api/street/%s", url.QueryEscape(street))
+	expected := fmt.Sprintf("http://www.mock.com/abfallkalender-api/street/%s", url.QueryEscape(street))
 
 	if dto.Links.Self.Href != expected {
 		t.Errorf("expected self link %s got %s", expected, dto.Links.Self.Href)
@@ -157,7 +158,7 @@ func (dto streetWithHouseNumbersDto) verifyHouseNumber(t *testing.T, street, num
 		t.Errorf(`house numbers should contain %s`, number)
 	}
 
-	expected := fmt.Sprintf("https://www.mock.com/abfallkalender-api/street/%s/number/%s", url.QueryEscape(street), number)
+	expected := fmt.Sprintf("http://www.mock.com/abfallkalender-api/street/%s/number/%s", url.QueryEscape(street), number)
 
 	if houseNumber != nil && houseNumber.Links.Self.Href != expected {
 		t.Errorf("expected house number self link %s got %s", expected, houseNumber.Links.Self.Href)

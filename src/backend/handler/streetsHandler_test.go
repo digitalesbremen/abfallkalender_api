@@ -107,7 +107,7 @@ func (dto streetsDto) verifyStreet(t *testing.T, streetName string) {
 		t.Errorf(`streets should contain %s`, streetName)
 	}
 
-	expected := fmt.Sprintf("https://www.mock.com/abfallkalender-api/street/%s", url.QueryEscape(streetName))
+	expected := fmt.Sprintf("http://www.mock.com/abfallkalender-api/street/%s", url.QueryEscape(streetName))
 
 	if street != nil && street.Links.Self.Href != expected {
 		t.Errorf("expected street self link %s got %s", expected, street.Links.Self.Href)
