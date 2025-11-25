@@ -84,41 +84,41 @@ jobs:
             --output=type=registry,oci-mediatypes=false \
             . --push
 
-  terraform-apply:
-    name: Deploy Lambda via OpenTofu (after successful image push)
-    runs-on: ubuntu-latest
-    needs: build
-    permissions:
-      id-token: write
-      contents: read
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v6
-
-      - name: Set up version from git tag
-        run: echo "VERSION=${GITHUB_REF_NAME}" >> $GITHUB_ENV
-
-      - name: Configure AWS credentials for OpenTofu apply (OIDC)
-        uses: aws-actions/configure-aws-credentials@v5
-        with:
-          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-actions-terraform-apply
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Setup OpenTofu
-        uses: opentofu/setup-opentofu@v1
-
-      - name: Validate and plan infrastructure changes
-        working-directory: infra
-        run: |
-          tofu --version
-          tofu init -input=false
-          tofu validate
-          tofu plan -input=false -no-color \
-            -var "image_tag=${VERSION}" \
-            -out=tfplan
-
-      - name: Apply infrastructure changes
-        if: success()
-        working-directory: infra
-        run: |
-          tofu apply -input=false -auto-approve tfplan
+  #terraform-apply:
+  #  name: Deploy Lambda via OpenTofu (after successful image push)
+  #  runs-on: ubuntu-latest
+  #  needs: build
+  #  permissions:
+  #    id-token: write
+  #    contents: read
+  #  steps:
+  #    - name: Check out repository
+  #      uses: actions/checkout@v6
+#
+  #    - name: Set up version from git tag
+  #      run: echo "VERSION=${GITHUB_REF_NAME}" >> $GITHUB_ENV
+#
+  #    - name: Configure AWS credentials for OpenTofu apply (OIDC)
+  #      uses: aws-actions/configure-aws-credentials@v5
+  #      with:
+  #        role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-actions-terraform-apply
+  #        aws-region: ${{ env.AWS_REGION }}
+#
+  #    - name: Setup OpenTofu
+  #      uses: opentofu/setup-opentofu@v1
+#
+  #    - name: Validate and plan infrastructure changes
+  #      working-directory: infra
+  #      run: |
+  #        tofu --version
+  #        tofu init -input=false
+  #        tofu validate
+  #        tofu plan -input=false -no-color \
+  #          -var "image_tag=${VERSION}" \
+  #          -out=tfplan
+#
+  #    - name: Apply infrastructure changes
+  #      if: success()
+  #      working-directory: infra
+  #      run: |
+  #        tofu apply -input=false -auto-approve tfplan
