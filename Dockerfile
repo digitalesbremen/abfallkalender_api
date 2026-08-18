@@ -35,6 +35,12 @@ FROM scratch AS runtime-base
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /app/main /main
 
+# Run as nobody so the image starts under a restricted Pod Security Standard
+# (runAsNonRoot: true). The UID is given numerically because scratch has no
+# /etc/passwd for a name to be resolved against. The default port is above
+# 1024, so no privileges are required.
+USER 65534:65534
+
 ENV PORT=8080
 ENTRYPOINT ["/main"]
 

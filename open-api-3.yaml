@@ -46,6 +46,42 @@ paths:
             text/yaml:
               schema:
                 type: string
+  /livez:
+    get:
+      tags:
+        - Meta
+      summary: Liveness probe
+      operationId: getLiveness
+      description: >-
+        Returns 200 as long as the process is able to serve requests. Performs
+        no upstream call, so a failure means this instance itself is unhealthy.
+      responses:
+        '200':
+          description: The instance is alive
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "ok"
+  /readyz:
+    get:
+      tags:
+        - Meta
+      summary: Readiness probe
+      operationId: getReadiness
+      description: >-
+        Returns 200 once the instance is ready to serve traffic. The upstream
+        service is deliberately not probed: this application caches responses
+        and stays useful during an upstream outage, whereas a probe tied to the
+        upstream would remove every replica from the service at the same time.
+      responses:
+        '200':
+          description: The instance is ready to serve traffic
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "ok"
   /abfallkalender-api/streets:
     get:
       tags:
