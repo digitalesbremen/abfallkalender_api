@@ -275,6 +275,16 @@ Developer‑friendly HTTP files for IDE clients are available under `misc/exampl
 
 Prometheus metrics are exposed at `/metrics` and already instrumented with request count and latency histograms. Add your Prometheus scrape config accordingly.
 
+Both `http_requests_total` and `http_request_duration_seconds` are labelled by
+route **name** (`Streets`, `Street`, `ICS`, `Next`, …), not by request path.
+Labelling by path would create one time series per street and house number.
+Requests that match no route never reach the middleware and are therefore not
+counted at all — `/metrics` reflects routed traffic only.
+
+> Note: `http_requests_total` previously used the raw request path as its
+> `endpoint` label. Dashboards or alerts that match on path values need to be
+> updated to route names.
+
 ## Limitations and notes
 
 - Upstream dependency: The app depends on Bremen’s official service being available. If the upstream format changes, this proxy may require updates.
