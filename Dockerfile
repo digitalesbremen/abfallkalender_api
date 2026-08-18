@@ -29,8 +29,8 @@
 #   RUN npm run build
 
 # --- Pre-Stage: Fetch Adapters for different architectures ---
-FROM --platform=linux/arm64 public.ecr.aws/awsguru/aws-lambda-adapter:0.9.1 AS adapter-source-arm64
-FROM --platform=linux/amd64 public.ecr.aws/awsguru/aws-lambda-adapter:0.9.1 AS adapter-source-amd64
+FROM --platform=linux/arm64 public.ecr.aws/awsguru/aws-lambda-adapter:1.1.0 AS adapter-source-arm64
+FROM --platform=linux/amd64 public.ecr.aws/awsguru/aws-lambda-adapter:1.1.0 AS adapter-source-amd64
 
 # --- Step 2: create multi stage backend builder (about 800 MB) ---
 FROM golang:1.26 AS builder
