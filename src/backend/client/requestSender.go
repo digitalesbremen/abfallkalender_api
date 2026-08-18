@@ -40,23 +40,21 @@ func (c *Client) sendRequest(originalRequest *http.Request, autoCloseBody bool) 
 	cacheKey := request.Method + " " + request.URL.String()
 
 	if cacheable {
-		if v, found := c.Cache.Get(cacheKey); found {
-			if cr, ok := v.(cachedResponse); ok {
-				// Build a fresh http.Response from cached data
-				resp := &http.Response{
-					StatusCode: cr.StatusCode,
-					Status:     fmt.Sprintf("%d %s", cr.StatusCode, http.StatusText(cr.StatusCode)),
-					Header:     cr.Header.Clone(),
-					Body:       io.NopCloser(bytes.NewReader(cr.Body)),
-					// Minimal fields required by callers
-				}
-				resp.Header.Set("X-Cache", "HIT")
-				c.setLastCacheStatus("HIT")
-				if autoCloseBody {
-					defer func(Body io.ReadCloser) { _ = Body.Close() }(resp.Body)
-				}
-				return resp, nil
+		if cr, found := c.Cache.Get(cacheKey); found {
+			// Build a fresh http.Response from cached data
+			resp := &http.Response{
+				StatusCode: cr.StatusCode,
+				Status:     fmt.Sprintf("%d %s", cr.StatusCode, http.StatusText(cr.StatusCode)),
+				Header:     cr.Header.Clone(),
+				Body:       io.NopCloser(bytes.NewReader(cr.Body)),
+				// Minimal fields required by callers
 			}
+			resp.Header.Set("X-Cache", "HIT")
+			c.setLastCacheStatus("HIT")
+			if autoCloseBody {
+				defer func(Body io.ReadCloser) { _ = Body.Close() }(resp.Body)
+			}
+			return resp, nil
 		}
 	}
 

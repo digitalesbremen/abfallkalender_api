@@ -1,7 +1,7 @@
 package client
 
 import (
-	"io/ioutil"
+	"os"
 	"strings"
 	"testing"
 )
@@ -16,7 +16,7 @@ func TestGetCSV(t *testing.T) {
 
 	ical, _ := NewClient(server.BaseUrl).GetCSV(baseUrl, "Aachener+Stra%C3%9Fe", "22")
 
-	response, _ := ioutil.ReadFile("test_csv_response.txt")
+	response, _ := os.ReadFile("test_csv_response.txt")
 
 	if string(ical) != string(response) {
 		t.Fatalf(`GetCSV(%s) should equal %s`, server.BaseUrl, string(response))
