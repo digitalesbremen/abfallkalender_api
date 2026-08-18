@@ -1,0 +1,81 @@
+name: Release
+
+# Cut a release from the Actions UI: pick the bump level, and this workflow
+# computes the next version, creates the tag plus a GitHub release with
+# generated notes, and then builds and pushes the images.
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: 'Version bump'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+        default: patch
+
+permissions:
+  contents: read
+
+jobs:
+  tag:
+    name: Create tag and GitHub release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # to create the tag and the release
+    outputs:
+      version: ${{ steps.version.outputs.next }}
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0 # without full history the runner sees no tags
+
+      - name: Compute next version
+        id: version
+        env:
+          BUMP: ${{ inputs.bump }}
+        run: |
+          set -euo pipefail
+
+          # Tags in this repository carry no "v" prefix (0.0.19, not v0.0.19).
+          latest=$(git tag --list '[0-9]*.[0-9]*.[0-9]*' --sort=-v:refname | head -n1)
+          latest=${latest:-0.0.0}
+
+          IFS=. read -r major minor patch <<<"$latest"
+
+          case "$BUMP" in
+            major) major=$((major + 1)); minor=0; patch=0 ;;
+            minor) minor=$((minor + 1)); patch=0 ;;
+            patch) patch=$((patch + 1)) ;;
+            *) echo "::error::Unknown bump level: $BUMP"; exit 1 ;;
+          esac
+
+          next="$major.$minor.$patch"
+          echo "Latest tag: $latest -> next: $next"
+          echo "next=$next" >> "$GITHUB_OUTPUT"
+          echo "### Release \`$next\` (previous: \`$latest\`)" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Create tag and release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.next }}
+        run: |
+          set -euo pipefail
+          # gh creates the tag along with the release when it does not exist yet.
+          gh release create "$VERSION" \
+            --target "${{ github.sha }}" \
+            --title "$VERSION" \
+            --generate-notes
+
+  images:
+    name: Build and push images
+    needs: tag
+    permissions:
+      contents: read
+    secrets: inherit
+    uses: ./.github/workflows/docker.yml
+    with:
+      version: ${{ needs.tag.outputs.version }}

@@ -2,9 +2,9 @@ package client
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 )
 
@@ -80,7 +80,7 @@ func doGetICS(t *testing.T, rw http.ResponseWriter, req *http.Request) {
 		_ = fmt.Sprintf("%s %s, want: GET", req.Method, icsContextPath)
 		t.FailNow()
 	}
-	response, _ := ioutil.ReadFile("test_ics_response.txt")
+	response, _ := os.ReadFile("test_ics_response.txt")
 	_, _ = rw.Write(response)
 }
 
@@ -89,7 +89,7 @@ func doGetCSV(t *testing.T, rw http.ResponseWriter, req *http.Request) {
 		_ = fmt.Sprintf("%s %s, want: GET", req.Method, csvContextPath)
 		t.FailNow()
 	}
-	response, _ := ioutil.ReadFile("test_csv_response.txt")
+	response, _ := os.ReadFile("test_csv_response.txt")
 	_, _ = rw.Write(response)
 }
 

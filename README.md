@@ -1,7 +1,6 @@
 # Bremer Abfallkalender API
 
-[![Build backend](https://github.com/digitalesbremen/abfallkalender_api/actions/workflows/backend.yml/badge.svg)](https://github.com/digitalesbremen/abfallkalender_api/actions/workflows/backend.yml)
-[![Build frontend](https://github.com/digitalesbremen/abfallkalender_api/actions/workflows/frontend.yml/badge.svg)](https://github.com/digitalesbremen/abfallkalender_api/actions/workflows/frontend.yml)
+[![CI](https://github.com/digitalesbremen/abfallkalender_api/actions/workflows/ci.yml/badge.svg)](https://github.com/digitalesbremen/abfallkalender_api/actions/workflows/ci.yml)
 [![Build docker and push](https://github.com/digitalesbremen/abfallkalender_api/actions/workflows/docker.yml/badge.svg)](https://github.com/digitalesbremen/abfallkalender_api/actions/workflows/docker.yml)
 [![Docker hub image](https://img.shields.io/docker/image-size/larmic/abfallkalender_api?label=dockerhub)](https://hub.docker.com/repository/docker/larmic/abfallkalender_api)
 ![Docker Image Version (latest by date)](https://img.shields.io/docker/v/larmic/abfallkalender_api)
@@ -9,7 +8,7 @@
 
 ## What is this project?
 
-An HTTP API and tiny web component that act as a stable proxy in front of Bremen’s official waste collection calendar (Bremer Abfallkalender). The official service has no public, stable API. Instead, it serves data under a dynamic, time‑varying base URL. This project discovers that dynamic URL at runtime and exposes a minimal, predictable API on top.
+An HTTP API that acts as a stable proxy in front of Bremen’s official waste collection calendar (Bremer Abfallkalender). The official service has no public, stable API. Instead, it serves data under a dynamic, time‑varying base URL. This project discovers that dynamic URL at runtime and exposes a minimal, predictable API on top.
 
 Key capabilities:
 - List all streets known to the official calendar
@@ -17,7 +16,6 @@ Key capabilities:
 - Fetch the pickup calendar for a given street and house number (as ICS or CSV)
 - Compute and return the next upcoming collection day and its waste types (JSON)
 - Serve Prometheus metrics
-- Serve a lightweight frontend web component (`kalender.js`)
 
 Use cases:
 - Integrate Bremen waste pickup schedules into home automation (Home Assistant, Node‑RED, etc.)
@@ -112,31 +110,55 @@ Base path: your deployment domain. Examples below assume `https://your.host`.
 - GET `/metrics`
   - Exposes Prometheus metrics (`http_requests_total`, `http_request_duration_seconds`).
 
-- GET `/kalender.js` and `/kalender.js.map`
-  - Serves a small web component that can render a calendar widget in the browser.
-
-The full OpenAPI description lives in `open-api-3.yaml` and is served by the app at `/` and `/abfallkalender-api`.
+The full OpenAPI description lives in `open-api-3.yaml`, is embedded into the binary at build time, and is served by the app at `/` and `/abfallkalender-api`.
 
 ## Quick start
 
 ### Docker
 
 ```bash
-docker build -t abfallkalender-api .
-docker run --rm -p 8080:8080 -e PORT=8080 abfallkalender-api
+make docker-build
+make docker-run
 ```
 
-Your API is now available at `http://localhost:8080`.
+Your API is now available at `http://localhost:8080`. Run `make help` for all targets.
 
 ### Go (local)
 
 ```bash
 make run
 # or
-go run ./...
+go run .
 ```
 
 The server listens on `:${PORT}` (defaults to `8080`).
+
+## Releasing
+
+Releases are cut from the GitHub Actions UI — no local tagging required:
+
+1. Go to **Actions → Release → Run workflow**
+2. Pick the bump level (`patch`, `minor` or `major`)
+
+The workflow computes the next version from the latest tag, creates that tag
+plus a GitHub release with generated notes, and pushes the image to Docker Hub
+as `larmic/abfallkalender_api`, tagged with the version and `latest`, for
+`linux/amd64`, `linux/arm64` and `linux/arm/v7`.
+
+Tags carry no `v` prefix (`0.0.20`, not `v0.0.20`).
+
+Releasing touches Docker Hub only. The AWS Lambda deployment is a separate,
+deliberately manual path — see `infra/README.md`.
+
+### Images
+
+The `Dockerfile` cross-compiles: the builder stage always runs natively on the
+build platform (`FROM --platform=$BUILDPLATFORM`) and Go targets the requested
+architecture via `GOOS`/`GOARCH`. No QEMU emulation is involved, which keeps the
+multi-arch build fast. It exposes two targets:
+
+- `runner-standard` — plain image for K8s, Docker or a Raspberry Pi
+- `runner-lambda` — adds the AWS Lambda Web Adapter as a Lambda extension
 
 ## Examples (curl)
 

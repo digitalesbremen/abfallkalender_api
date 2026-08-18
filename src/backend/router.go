@@ -9,7 +9,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-func NewRouter(kalenderJS string, kalenderJSMap string, requestCount *prometheus.CounterVec, requestLatency *prometheus.HistogramVec) *mux.Router {
+func NewRouter(openApiSpec []byte, requestCount *prometheus.CounterVec, requestLatency *prometheus.HistogramVec) *mux.Router {
 	router := mux.NewRouter().StrictSlash(true)
 	router.NotFoundHandler = handler.Handle404()
 
@@ -17,11 +17,11 @@ func NewRouter(kalenderJS string, kalenderJSMap string, requestCount *prometheus
 
 	// TODO signal handler
 
-	for _, route := range routes {
+	for _, route := range newRoutes(openApiSpec) {
 		var httpHandler http.Handler
 
 		httpHandler = route.HandlerFunc
-		httpHandler = handler.Logger(httpHandler, route.Name, kalenderJS, kalenderJSMap)
+		httpHandler = handler.Logger(httpHandler, route.Name)
 
 		router.
 			Methods(route.Method).

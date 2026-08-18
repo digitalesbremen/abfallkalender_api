@@ -15,59 +15,56 @@ type Route struct {
 
 type Routes []Route
 
-var routes = Routes{
-	Route{
-		Name:        "Metrics",
-		Method:      "GET",
-		Pattern:     "/metrics",
-		HandlerFunc: promhttp.Handler().ServeHTTP,
-	},
-	Route{
-		Name:        "Open Api documentation (yaml)",
-		Method:      "GET",
-		Pattern:     "/",
-		HandlerFunc: handler.OpenApiDocumentation,
-	},
-	Route{
-		Name:        "Open Api documentation (yaml)",
-		Method:      "GET",
-		Pattern:     "/abfallkalender-api",
-		HandlerFunc: handler.OpenApiDocumentation,
-	},
-	Route{
-		Name:        "Streets",
-		Method:      "GET",
-		Pattern:     "/abfallkalender-api/streets",
-		HandlerFunc: handler.NewController().GetStreets,
-	},
-	Route{
-		Name:        "Street",
-		Method:      "GET",
-		Pattern:     "/abfallkalender-api/street/{street}",
-		HandlerFunc: handler.NewController().GetStreet,
-	},
-	Route{
-		Name:        "ICS",
-		Method:      "GET",
-		Pattern:     "/abfallkalender-api/street/{street}/number/{number}",
-		HandlerFunc: handler.NewController().GetCalendar,
-	},
-	Route{
-		Name:        "Next",
-		Method:      "GET",
-		Pattern:     "/abfallkalender-api/street/{street}/number/{number}/next",
-		HandlerFunc: handler.NewController().GetNext,
-	},
-	Route{
-		Name:        "Kalender web component",
-		Method:      "GET",
-		Pattern:     "/kalender.js",
-		HandlerFunc: handler.GetWebComponent,
-	},
-	Route{
-		Name:        "Kalender web component",
-		Method:      "GET",
-		Pattern:     "/kalender.js.map",
-		HandlerFunc: handler.GetWebComponentMap,
-	},
+// newRoutes builds the route table. All routes share a single controller, and
+// therefore a single upstream HTTP client with one cache — previously every
+// route constructed its own, which meant four independent caches querying the
+// same upstream.
+func newRoutes(openApiSpec []byte) Routes {
+	controller := handler.NewController()
+	openApiDocumentation := handler.OpenApiDocumentation(openApiSpec)
+
+	return Routes{
+		Route{
+			Name:        "Metrics",
+			Method:      "GET",
+			Pattern:     "/metrics",
+			HandlerFunc: promhttp.Handler().ServeHTTP,
+		},
+		Route{
+			Name:        "Open Api documentation (yaml)",
+			Method:      "GET",
+			Pattern:     "/",
+			HandlerFunc: openApiDocumentation,
+		},
+		Route{
+			Name:        "Open Api documentation (yaml)",
+			Method:      "GET",
+			Pattern:     "/abfallkalender-api",
+			HandlerFunc: openApiDocumentation,
+		},
+		Route{
+			Name:        "Streets",
+			Method:      "GET",
+			Pattern:     "/abfallkalender-api/streets",
+			HandlerFunc: controller.GetStreets,
+		},
+		Route{
+			Name:        "Street",
+			Method:      "GET",
+			Pattern:     "/abfallkalender-api/street/{street}",
+			HandlerFunc: controller.GetStreet,
+		},
+		Route{
+			Name:        "ICS",
+			Method:      "GET",
+			Pattern:     "/abfallkalender-api/street/{street}/number/{number}",
+			HandlerFunc: controller.GetCalendar,
+		},
+		Route{
+			Name:        "Next",
+			Method:      "GET",
+			Pattern:     "/abfallkalender-api/street/{street}/number/{number}/next",
+			HandlerFunc: controller.GetNext,
+		},
+	}
 }

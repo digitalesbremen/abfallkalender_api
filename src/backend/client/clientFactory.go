@@ -5,15 +5,13 @@ import (
 	"net/url"
 	"sync"
 	"time"
-
-	cache "github.com/patrickmn/go-cache"
 )
 
 type Client struct {
 	BaseURL    string
 	BaseHost   string
 	HTTPClient *http.Client
-	Cache      *cache.Cache
+	Cache      *ttlCache[cachedResponse]
 	// LastCacheStatus reflects the X-Cache value (HIT/MISS) of the last
 	// successful outbound request performed via this client instance.
 	// It is guarded by cacheStatusMu to be safe under concurrent access.
@@ -41,7 +39,7 @@ func NewClient(baseURL string) *Client {
 			},
 		},
 		// Default TTL 24h, cleanup every 30m
-		Cache: cache.New(24*time.Hour, 30*time.Minute),
+		Cache: newTTLCache[cachedResponse](24*time.Hour, 30*time.Minute),
 	}
 	return &client
 }

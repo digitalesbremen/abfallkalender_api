@@ -11,11 +11,12 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-// //go:embed dist/kalender.js
-var kalenderJS string
-
-// //go:embed dist/kalender.js.map
-var kalenderJSMap string
+// openApiSpec is embedded at build time. The Docker build substitutes
+// ${VERSION} in the file before compiling, so the served spec carries the
+// release version.
+//
+//go:embed open-api-3.yaml
+var openApiSpec []byte
 
 var (
 	requestCount = prometheus.NewCounterVec(
@@ -41,7 +42,7 @@ func main() {
 	prometheus.MustRegister(requestCount)
 	prometheus.MustRegister(requestLatency)
 
-	router := api.NewRouter(kalenderJS, kalenderJSMap, requestCount, requestLatency)
+	router := api.NewRouter(openApiSpec, requestCount, requestLatency)
 
 	port, portSet := os.LookupEnv("PORT")
 	if !portSet {

@@ -19,7 +19,7 @@ Notes for newcomers to OpenTofu
 - State is stored locally by default in this folder (terraform.tfstate). For teams/CI, consider a remote backend (e.g. S3 + DynamoDB).
 - Provider versions are pinned in versions.tf for reproducibility. Update carefully to avoid breaking changes.
 
-Dieses Verzeichnis enthaelt die OpenTofu-Konfiguration, um ein privates Amazon ECR Repository sowie die IAM/OIDC Anbindung fuer GitHub Actions bereitzustellen. Zusaetzlich ist der CI-Workflow so eingerichtet, dass bei neuen Git-Tags ein Docker-Image nach Docker Hub (multi-arch) und ein einzelnes ARM64-Image nach ECR gepusht wird.
+Dieses Verzeichnis enthaelt die OpenTofu-Konfiguration, um ein privates Amazon ECR Repository sowie die IAM/OIDC Anbindung fuer GitHub Actions bereitzustellen. Zusaetzlich ist der Release-Workflow so eingerichtet, dass bei jedem Release ein Docker-Image nach Docker Hub (multi-arch) und ein einzelnes ARM64-Image nach ECR gepusht wird.
 
 Voraussetzungen
 - AWS Account und Berechtigungen (fuer den Erstaufbau Admin-Rechte empfohlen)
@@ -27,7 +27,7 @@ Voraussetzungen
 - Tools lokal installiert:
   - OpenTofu (tofu)
   - AWS CLI (aws)
-  - Docker (inkl. Buildx/QEMU fuer optionale lokale Tests)
+  - Docker (inkl. Buildx fuer optionale lokale Tests; QEMU wird nicht benoetigt)
 
 Enthaltene Ressourcen
 - ECR Repository: abfallkalender-api (privat)
@@ -56,7 +56,9 @@ tofu apply
 ```
 
 Lambda aus Container-Image bereitstellen
-Voraussetzung: Es existiert bereits ein Image im ECR mit dem gewuenschten Tag (wird normalerweise durch den CI-Workflow beim Taggen eines Releases gepusht, z. B. v1.2.3). Die Lambda-Funktion zieht genau dieses Image.
+Voraussetzung: Es existiert bereits ein Image im ECR mit dem gewuenschten Tag (z. B. 0.0.20). Der
+Release-Workflow pusht nur nach Docker Hub, das ECR-Image legst du manuell an - siehe Abschnitt
+"Image ins ECR pushen (manuell)" weiter unten. Die Lambda-Funktion zieht genau dieses Image.
 
 Variablen:
 - image_tag (erforderlich): Tag des ECR-Images
@@ -69,7 +71,7 @@ Variablen:
 Beispiel:
 ```
 cd infra
-tofu apply -var "image_tag=v1.2.3"
+tofu apply -var "image_tag=0.0.20"
 
 # Ausgabe enthaelt u. a. die URL
 # lambda_function_url = https://xxxxxxxxxxxxxxxx.lambda-url.eu-central-1.on.aws/
@@ -99,41 +101,63 @@ tofu apply
 ```
 
 GitHub Actions - Konfiguration
-Der Workflow .github/workflows/docker.yml ist so eingerichtet, dass bei jedem Git-Tag:
-- nach Docker Hub multi-arch (linux/amd64, linux/arm64, linux/arm) mit latest und dem Versionstag gepusht wird,
-- nach ECR ein einzelnes linux/arm64-Image mit dem Versionstag gepusht wird (kein latest).
+Releases werden ueber .github/workflows/release.yml ausgeloest (Actions -> Release -> Run workflow,
+Auswahl patch/minor/major). Der Workflow legt Tag und GitHub Release an und pusht das Image
+multi-arch (linux/amd64, linux/arm64, linux/arm/v7) nach Docker Hub.
 
-Erforderliche Secrets/Settings im GitHub-Repository
+Wichtig: Der Release-Workflow fasst AWS nicht an. Es wird kein Image nach ECR gepusht und keine
+Lambda aktualisiert. Der AWS-Weg ist bewusst manuell, siehe naechster Abschnitt.
+
+Erforderliche Secrets im GitHub-Repository
 - DOCKER_USERNAME - Docker Hub Benutzername
 - DOCKER_PASSWORD - Docker Hub Passwort/Token
-- AWS_ACCOUNT_ID - deine AWS Account ID 
 
-GitHub Actions benoetigt keine AWS Access Keys; der Login erfolgt ueber OIDC und die Rolle github-actions-ecr-push.
+Hinweis: Die IAM-Rolle github-actions-ecr-push und der GitHub OIDC Provider bleiben in dieser
+Konfiguration bestehen, werden aktuell aber von keinem Workflow mehr genutzt. Sie koennen entfernt
+werden, falls der ECR-Push dauerhaft manuell bleiben soll.
 
 Hinweis zu Images/Architekturen
-Das Dockerfile baut Images fuer linux/arm64 und linux/amd64; die Lambda-Konfiguration verwendet die Architektur arm64. Stelle sicher, dass fuer den gewaehlten Tag ein arm64-Image im ECR liegt (der CI-Workflow pusht ein einzelnes ARM64-Image ins ECR).
+Das Dockerfile cross-kompiliert: die Builder-Stage laeuft immer nativ auf der Build-Plattform
+(FROM --platform=$BUILDPLATFORM), Go baut ueber GOOS/GOARCH fuer das Ziel. QEMU wird nicht benoetigt.
+Es gibt zwei Targets: runner-standard (Docker Hub) und runner-lambda (inkl. AWS Lambda Web Adapter).
+Die Lambda-Konfiguration verwendet arm64.
 
-Manuell: Image ins ECR pushen (optional)
-Falls du nicht auf die CI warten moechtest, kannst du lokal ein einzelnes ARM64-Image bauen und pushen:
+Image ins ECR pushen (manuell)
+Der Release-Workflow pusht nur nach Docker Hub. Fuer ein Lambda-Update baust du das ARM64-Image
+mit dem Lambda-Adapter lokal und pusht es selbst. Aus dem Repository-Root:
 
 ```
 # Variablen
 REGION=eu-central-1
 ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 REPO=abfallkalender-api
-VERSION=test-local
+VERSION=0.0.20
 ECR_URI="$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$REPO"
 
 # Login zu ECR
 aws ecr get-login-password --region $REGION | docker login \
   --username AWS --password-stdin "$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com"
 
-# Build (ARM64)
+# Buildx-Builder mit docker-container-Driver (einmalig, fuer Cross-Builds noetig)
+docker buildx create --name abfk --driver docker-container --use 2>/dev/null || docker buildx use abfk
+
+# Build + Push (ARM64, Target runner-lambda)
+# --provenance/--sbom/oci-mediatypes aus: AWS Lambda akzeptiert keine
+# OCI-Index- und Attestation-Manifeste.
 docker buildx build \
+  --target runner-lambda \
   --platform=linux/arm64 \
   --build-arg VERSION=$VERSION \
+  --provenance=false \
+  --sbom=false \
+  --output=type=registry,oci-mediatypes=false \
   -t "$ECR_URI:$VERSION" \
   . --push
+```
+
+Pruefen, dass genau ein arm64-Manifest ohne OCI-Index angekommen ist:
+```
+aws ecr describe-images --repository-name $REPO --image-ids imageTag=$VERSION
 ```
 
 Aufraeumen / Entfernen
@@ -146,7 +170,7 @@ tofu destroy
 
 Troubleshooting
 - Fehler beim OIDC Provider: siehe Abschnitt OIDC Provider bereits vorhanden? und importiere den Provider in den State.
-- AccessDeniedException beim Push aus CI: Pruefe, ob die Rolle github-actions-ecr-push existiert und der Trust auf dein Repo verweist (repo:digitalesbremen/abfallkalender_api:ref:refs/tags/*).
+- AccessDeniedException beim Push: Der ECR-Push laeuft lokal mit deinen AWS-CLI-Credentials. Pruefe mit `aws sts get-caller-identity`, mit welcher Identitaet du unterwegs bist, und ob sie ECR-Push-Rechte hat.
 - RepositoryNotFoundException: tofu apply wurde evtl. noch nicht ausgefuehrt. ECR Repository zuerst anlegen.
 - Falsche Region: Stelle sicher, dass ueberall eu-central-1 verwendet wird (Provider, AWS CLI, CI-Env AWS_REGION).
 
@@ -160,17 +184,12 @@ Lambda-spezifisch:
   ```
   Stelle sicher, dass nach deiner Reservierung mindestens 10 unreserviert verbleiben. Beispiel ohne Reservierung (empfohlen):
   ```
-  tofu apply -var "image_tag=v1.2.3"
+  tofu apply -var "image_tag=0.0.20"
   ```
   Beispiel mit Reservierung (nur wenn Quote passt):
   ```
-  tofu apply -var "image_tag=v1.2.3" -var "reserved_concurrency=5"
+  tofu apply -var "image_tag=0.0.20" -var "reserved_concurrency=5"
   ```
-
-Lambda-spezifisch:
-- Image nicht gefunden: Pruefe, ob der angegebene image_tag im ECR vorhanden ist (gleiches Konto/Region).
-- 5xx/Timeouts: Erhoehe `lambda_timeout_s` und/oder `lambda_memory_mb`. Logs unter /aws/lambda/abfallkalender-api pruefen.
-- CORS: Die Function URL ist mit offenem CORS fuer GET/HEAD/OPTIONS konfiguriert. Bedarfsgerecht anpassen.
 
 Naechste Schritte (spaeter)
 - Optionale Begrenzung der Kostenrisiken via Reserved Concurrency / API Gateway / WAF
