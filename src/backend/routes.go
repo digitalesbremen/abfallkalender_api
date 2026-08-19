@@ -11,6 +11,10 @@ type Route struct {
 	Method      string
 	Pattern     string
 	HandlerFunc http.HandlerFunc
+	// SkipLog suppresses the per-request log line. Used for the Kubernetes
+	// probes, which would otherwise dominate the log at roughly one line every
+	// few seconds per replica.
+	SkipLog bool
 }
 
 type Routes []Route
@@ -29,6 +33,20 @@ func newRoutes(openApiSpec []byte) Routes {
 			Method:      "GET",
 			Pattern:     "/metrics",
 			HandlerFunc: promhttp.Handler().ServeHTTP,
+		},
+		Route{
+			Name:        "Liveness probe",
+			Method:      "GET",
+			Pattern:     "/livez",
+			HandlerFunc: handler.Health,
+			SkipLog:     true,
+		},
+		Route{
+			Name:        "Readiness probe",
+			Method:      "GET",
+			Pattern:     "/readyz",
+			HandlerFunc: handler.Health,
+			SkipLog:     true,
 		},
 		Route{
 			Name:        "Open Api documentation (yaml)",

@@ -110,6 +110,11 @@ Base path: your deployment domain. Examples below assume `https://your.host`.
 - GET `/metrics`
   - Exposes Prometheus metrics (`http_requests_total`, `http_request_duration_seconds`).
 
+- GET `/livez` and `/readyz`
+  - Kubernetes probes. Return `200 ok` as soon as the process can serve requests.
+  - Neither performs an upstream call. See the Kubernetes section below for why.
+  - Excluded from the request log so probes do not drown out real traffic.
+
 The full OpenAPI description lives in `open-api-3.yaml`, is embedded into the binary at build time, and is served by the app at `/` and `/abfallkalender-api`.
 
 ## Quick start
@@ -160,6 +165,89 @@ multi-arch build fast. It exposes two targets:
 - `runner-standard` — plain image for K8s, Docker or a Raspberry Pi
 - `runner-lambda` — adds the AWS Lambda Web Adapter as a Lambda extension
 
+## Kubernetes
+
+The published image runs as UID `65534` (nobody) and handles `SIGTERM` by
+draining in-flight requests, so it works under a restricted Pod Security
+Standard and survives rolling updates without dropping connections.
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: abfallkalender-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: abfallkalender-api
+  template:
+    metadata:
+      labels:
+        app: abfallkalender-api
+    spec:
+      # Must stay above the application's own 15s shutdown timeout.
+      terminationGracePeriodSeconds: 30
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: api
+          image: larmic/abfallkalender_api:0.0.20
+          ports:
+            - name: http
+              containerPort: 8080
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          livenessProbe:
+            httpGet:
+              path: /livez
+              port: http
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: http
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 128Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: abfallkalender-api
+spec:
+  selector:
+    app: abfallkalender-api
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+```
+
+Notes:
+
+- **Pin the image tag.** `latest` exists but gives you no rollback target.
+- **`readOnlyRootFilesystem: true` works** — the binary writes nothing to disk;
+  the OpenAPI spec is embedded and the response cache lives in memory.
+- **Readiness does not check the upstream.** This service is a caching proxy in
+  front of `web.c-trace.de`. If the upstream fails, an upstream-coupled probe
+  would take every replica out of the service simultaneously, even though cached
+  responses (24 h TTL) could still be served. Liveness and readiness therefore
+  report the same thing.
+- **The cache is per pod.** Each replica keeps its own in-memory cache, so more
+  replicas mean proportionally more upstream requests while caches warm up.
+- **Scraping metrics**: `/metrics` is served on the same port.
+
 ## Examples (curl)
 
 ```bash
@@ -186,6 +274,16 @@ Developer‑friendly HTTP files for IDE clients are available under `misc/exampl
 ## Metrics
 
 Prometheus metrics are exposed at `/metrics` and already instrumented with request count and latency histograms. Add your Prometheus scrape config accordingly.
+
+Both `http_requests_total` and `http_request_duration_seconds` are labelled by
+route **name** (`Streets`, `Street`, `ICS`, `Next`, …), not by request path.
+Labelling by path would create one time series per street and house number.
+Requests that match no route never reach the middleware and are therefore not
+counted at all — `/metrics` reflects routed traffic only.
+
+> Note: `http_requests_total` previously used the raw request path as its
+> `endpoint` label. Dashboards or alerts that match on path values need to be
+> updated to route names.
 
 ## Limitations and notes
 

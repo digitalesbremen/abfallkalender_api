@@ -21,7 +21,9 @@ func NewRouter(openApiSpec []byte, requestCount *prometheus.CounterVec, requestL
 		var httpHandler http.Handler
 
 		httpHandler = route.HandlerFunc
-		httpHandler = handler.Logger(httpHandler, route.Name)
+		if !route.SkipLog {
+			httpHandler = handler.Logger(httpHandler, route.Name)
+		}
 
 		router.
 			Methods(route.Method).

@@ -21,7 +21,10 @@ func MetricsMiddleware(requestCount *prometheus.CounterVec, requestLatency *prom
 			timer := prometheus.NewTimer(requestLatency.WithLabelValues(r.Method, routeName))
 			defer timer.ObserveDuration()
 
-			requestCount.WithLabelValues(r.Method, r.URL.Path).Inc()
+			// Label by route name, never by r.URL.Path: the path contains street
+			// names and house numbers, so using it would create one time series
+			// per queried address and blow up Prometheus cardinality.
+			requestCount.WithLabelValues(r.Method, routeName).Inc()
 
 			inner.ServeHTTP(w, r)
 		})
