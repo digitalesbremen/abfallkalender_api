@@ -1,7 +1,7 @@
 # The builder always runs natively on the build platform and cross-compiles for
 # the target. Go does this out of the box, so no QEMU emulation is involved --
 # which is what made the previous multi-arch build slow.
-FROM --platform=$BUILDPLATFORM golang:1.26 AS builder
+FROM --platform=$BUILDPLATFORM golang:1.27 AS builder
 LABEL stage=intermediate
 
 WORKDIR /app
