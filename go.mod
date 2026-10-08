@@ -2,7 +2,7 @@ module abfallkalender_api
 
 go 1.25.0
 
-toolchain go1.27.1
+toolchain go1.27.2
 
 require github.com/gorilla/mux v1.8.1
 
